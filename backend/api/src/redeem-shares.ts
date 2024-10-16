@@ -1,4 +1,4 @@
-import { groupBy, mapValues, min, sum, sumBy } from 'lodash'
+import { groupBy, mapValues, min, orderBy, sum, sumBy } from 'lodash'
 
 import {
   getBinaryRedeemableAmountFromContractMetric,
@@ -117,15 +117,12 @@ export const redeemShares = async (
         })
       }
     } else {
-      let totalCMAmount = 0
-      for (const bet of newBets.filter((b) => b.userId === userId)) {
-        const metric = contractMetrics.find(
-          (m) => m.answerId == bet.answerId && m.userId === userId
+      let totalAmountRedeemed = 0
+      for (const metric of contractMetrics.filter((m) => m.userId === userId)) {
+        const newUsersBets = newBets.filter(
+          (b) => b.answerId == metric.answerId && b.userId === userId
         )
-        if (!metric) {
-          log.error('Contract metric not found for new bet', { bet })
-          continue
-        }
+        if (!newUsersBets.length) continue
 
         const { shares, loanPayment, netAmount } =
           getBinaryRedeemableAmountFromContractMetric(metric)
@@ -138,9 +135,10 @@ export const redeemShares = async (
             'Invalid redemption amount, no clue what happened here.'
           )
         }
-        totalCMAmount += netAmount
+        totalAmountRedeemed += netAmount
         const answerId = metric.answerId ?? undefined
-        const lastProb = bet.probAfter
+        const lastProb = orderBy(newUsersBets, 'createdTime', 'desc')[0]
+          .probAfter
         const [yesBet, noBet] = getRedemptionBets(
           contract,
           shares,
@@ -162,11 +160,11 @@ export const redeemShares = async (
         })
       }
 
-      if (totalCMAmount !== 0) {
+      if (totalAmountRedeemed !== 0) {
         balanceUpdates.push({
           id: userId,
           [contract.token === 'CASH' ? 'cashBalance' : 'balance']:
-            totalCMAmount,
+            totalAmountRedeemed,
         })
       }
     }

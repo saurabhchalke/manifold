@@ -49,6 +49,11 @@ const CheckoutPage = () => {
     setLoadingPrice,
     () => setShowConfetti(true)
   )
+  useEffect(() => {
+    if (router.query.purchaseSuccess) {
+      setShowConfetti(true)
+    }
+  }, [router])
 
   const { dollarAmount: dollarAmountFromQuery } = router.query
   useEffect(() => {
@@ -132,7 +137,7 @@ const CheckoutPage = () => {
   }
 
   return (
-    <Page className={'p-3'} trackPageView={'checkout page'}>
+    <Page className={'p-3'} trackPageView={'checkout page'} hideFooter>
       {showConfetti && <FullscreenConfetti />}
       {page === 'checkout' &&
       (isIOS ? true : !dollarAmountSelected && !dollarAmountFromQuery) ? (

@@ -64,6 +64,11 @@ module.exports = {
         destination: '/election',
         permanent: true,
       },
+      {
+        source: '/elections',
+        destination: '/election',
+        permanent: true,
+      },
 
       {
         source: '/api',
@@ -99,6 +104,11 @@ module.exports = {
       {
         source: '/terms',
         destination: 'https://docs.manifold.markets/terms-and-conditions',
+        permanent: true,
+      },
+      {
+        source: '/mana-only-terms',
+        destination: 'https://docs.manifold.markets/mana-only-terms',
         permanent: true,
       },
       {

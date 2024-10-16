@@ -87,6 +87,7 @@ export function TwombaFundsSelector(props: {
                   index={index}
                   loadingPrice={loadingPrice}
                   disabled={pastLimit}
+                  user={user}
                   onClick={() => onSelectPriceInDollars(amounts.priceInDollars)}
                 />
               ))}
@@ -95,16 +96,19 @@ export function TwombaFundsSelector(props: {
         </>
       )}
       <div className="grid grid-cols-2 gap-4 gap-y-6">
-        {prices.map((amounts, index) => (
-          <PriceTile
-            key={`price-tile-${amounts.mana}`}
-            amounts={amounts}
-            index={index}
-            loadingPrice={loadingPrice}
-            disabled={pastLimit}
-            onClick={() => onSelectPriceInDollars(amounts.priceInDollars)}
-          />
-        ))}
+        {prices
+          .sort((a, b) => a.bonusInDollars - b.bonusInDollars)
+          .map((amounts, index) => (
+            <PriceTile
+              key={`price-tile-${amounts.mana}`}
+              amounts={amounts}
+              index={index}
+              loadingPrice={loadingPrice}
+              disabled={pastLimit}
+              user={user}
+              onClick={() => onSelectPriceInDollars(amounts.priceInDollars)}
+            />
+          ))}
       </div>
       {pastLimit && (
         <AlertBox title="Purchase limit" className="my-4">
@@ -112,12 +116,30 @@ export function TwombaFundsSelector(props: {
           {formatMoneyUSD(DOLLAR_PURCHASE_LIMIT)}. Please try again tomorrow.
         </AlertBox>
       )}
+
+      <div className="mx-auto mt-8 max-w-xl rounded-lg border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-700 dark:bg-indigo-900">
+        <p className="text-indigo-700 dark:text-indigo-300">
+          If you wish to purchase $5,000 - $100,000, please reach out to{' '}
+          <a
+            href="mailto:info@manifold.markets"
+            className="underline hover:text-indigo-600 dark:hover:text-indigo-400"
+          >
+            info@manifold.markets
+          </a>{' '}
+          for a special discount.
+        </p>
+      </div>
+
       <div className="text-ink-500 mt-4 text-sm">
         Please see our{' '}
         <Link href="/terms" target="_blank" className="underline">
           Terms & Conditions
-        </Link>{' '}
-        and{' '}
+        </Link>
+        ,{' '}
+        <Link href="/mana-only-terms" target="_blank" className="underline">
+          Mana-only Terms of Service
+        </Link>
+        , and{' '}
         <Link href="/sweepstakes-rules" target="_blank" className="underline">
           Sweepstakes Rules
         </Link>

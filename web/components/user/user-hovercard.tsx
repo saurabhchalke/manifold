@@ -12,7 +12,6 @@ import { RelativeTimestampNoTooltip } from '../relative-timestamp'
 import dayjs from 'dayjs'
 import { Col } from '../layout/col'
 import { FullUser } from 'common/api/user-types'
-import { useIsClient } from 'web/hooks/use-is-client'
 import { TRADE_TERM } from 'common/envs/constants'
 import { SimpleCopyTextButton } from 'web/components/buttons/copy-link-button'
 
@@ -27,8 +26,6 @@ export function UserHovercard({
   userId,
   className,
 }: UserHovercardProps) {
-  const isClient = useIsClient()
-  if (!isClient) return <button className="inline-flex">{children}</button>
   return (
     <HoverCard.Root openDelay={150}>
       {/* Use "asChild" and wrap children in a button to prevent nested links.
