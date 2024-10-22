@@ -6,7 +6,6 @@ import {
   CrystalTier,
   PlusTier,
   PremiumTier,
-  BasicTier,
 } from 'web/public/custom-components/tiers'
 import { Row } from '../layout/row'
 import CheckedDropdownMenu from '../widgets/checked-dropdown'
@@ -126,17 +125,6 @@ export function TierDropdownPill(props: {
           onToggle: () => toggleTier('plus'),
           checked: currentTiers[tiers.indexOf('plus')] == '1',
         },
-        {
-          name: 'Basic',
-          content: (
-            <Row className="text-ink-900 items-center text-sm">
-              <BasicTier />
-              Basic
-            </Row>
-          ),
-          onToggle: () => toggleTier('basic'),
-          checked: currentTiers[tiers.indexOf('basic')] == '1',
-        },
       ]}
       buttonContent={(open) => (
         <DropdownPill
@@ -148,9 +136,6 @@ export function TierDropdownPill(props: {
               ? 'Tiers'
               : currentTiers.split('').map((tier, index) => {
                   if (tier === '1') {
-                    if (tiers[index] == 'basic') {
-                      return <BasicTier className="text-white" key={index} />
-                    }
                     if (tiers[index] == 'plus') {
                       return <PlusTier key={index} />
                     }

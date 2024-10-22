@@ -8,7 +8,6 @@ import {
   getUsers,
   isProd,
   log,
-  revalidateStaticProps,
 } from 'shared/utils'
 import { groupBy, sum, sumBy, uniq } from 'lodash'
 import {
@@ -220,7 +219,7 @@ export async function updateUserPortfolioHistoriesCore(userIds?: string[]) {
     )
   )
 
-  await revalidateStaticProps('/leaderboards')
+  // await revalidateStaticProps('/leaderboards')
 
   log('Done.')
 }

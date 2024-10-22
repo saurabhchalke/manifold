@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { DAY_MS } from 'common/util/time'
 import PlaceholderGraph from 'web/lib/icons/placeholder-graph.svg'
 import { usePersistentInMemoryState } from 'web/hooks/use-persistent-in-memory-state'
-import { maxBy, minBy } from 'lodash'
 import { buildArray } from 'common/util/array'
 import { SizedBinaryChart } from '../charts/contract/binary'
 import { getBetPoints } from 'web/lib/supabase/bets'
@@ -40,17 +39,12 @@ export function FeedBinaryChart(props: {
     })
   }, [startDate, contract.id])
 
-  const max = maxBy(points, 'y')?.y ?? 1
-  const min = minBy(points, 'y')?.y ?? 0
-
-  const percentBounds = { max, min }
-
   if (points && points.length > 0 && !!points[0]) {
     return (
       <SizedBinaryChart
         betPoints={points}
         contract={contract}
-        percentBounds={percentBounds}
+        zoomY
         className={className}
         size={'sm'}
         noWatermark
