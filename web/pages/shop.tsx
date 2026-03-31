@@ -4850,11 +4850,12 @@ function ShopItemCard(props: {
             </div>
           )}
 
-          {item.hidden && !(item.seasonalAvailability && isSeasonalItemAvailable(item)) && (
-            <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
-              Hidden
-            </div>
-          )}
+          {item.hidden &&
+            !(item.seasonalAvailability && isSeasonalItemAvailable(item)) && (
+              <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
+                Hidden
+              </div>
+            )}
 
           {/* Card header with badge inline */}
           <Row className="items-start justify-between gap-2">
@@ -5075,7 +5076,14 @@ function ShopItemCard(props: {
                         )}
                         {(hasDiscount || item.originalPrice) && (
                           <span className="rounded bg-green-100 px-1 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-900/50 dark:text-green-300">
-                            -{Math.round((1 - discountedPrice / (item.originalPrice ?? item.price)) * 100)}%
+                            -
+                            {Math.round(
+                              (1 -
+                                discountedPrice /
+                                  (item.originalPrice ?? item.price)) *
+                                100
+                            )}
+                            %
                           </span>
                         )}
                       </Row>
@@ -5177,7 +5185,12 @@ function ShopItemCard(props: {
                   {formatMoney(discountedPrice)}
                 </span>
                 <span className="ml-1 text-xs text-green-600">
-                  ({Math.round((1 - discountedPrice / (item.originalPrice ?? item.price)) * 100)}% off)
+                  (
+                  {Math.round(
+                    (1 - discountedPrice / (item.originalPrice ?? item.price)) *
+                      100
+                  )}
+                  % off)
                 </span>
               </>
             ) : (
