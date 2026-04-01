@@ -52,11 +52,7 @@ export function ManifoldLogo(props: { className?: string; twoLine?: boolean }) {
         <div
           className={clsx('text-xl font-thin text-indigo-700 dark:text-white')}
         >
-          {aprilFools
-            ? 'MANIFOOLD'
-            : ENV == 'DEV'
-            ? 'DEVIFOLD'
-            : 'MANIFOLD'}
+          {aprilFools ? 'MANIFOOLD' : ENV == 'DEV' ? 'DEVIFOLD' : 'MANIFOLD'}
         </div>
       </Link>
     </div>
