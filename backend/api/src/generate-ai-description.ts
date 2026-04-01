@@ -86,7 +86,7 @@ export const generateAIDescription: APIHandler<'generate-ai-description'> =
         Only return the markdown description, nothing else.
         `
         const gptResponse = await promptAI(prompt, {
-          model: aiModels.haiku,
+          model: aiModels.flash,
           webSearch: true,
         })
 
@@ -110,7 +110,9 @@ export const generateAIDescription: APIHandler<'generate-ai-description'> =
           hasExistingDescription: !!description,
         })
 
-        return { description: anythingToRichText({ markdown: cleanedResponse }) }
+        return {
+          description: anythingToRichText({ markdown: cleanedResponse }),
+        }
       } catch (e) {
         log.error('Failed to generate description:', { e })
         throw new APIError(
