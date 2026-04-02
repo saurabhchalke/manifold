@@ -5,7 +5,7 @@ import Router from 'next/router'
 import { SEO } from 'web/components/SEO'
 import { DailyStats } from 'web/components/home/daily-stats'
 import { Page } from 'web/components/layout/page'
-import { DowntimeBanner } from 'web/components/nav/banner'
+import { Banner } from 'web/components/nav/banner'
 import { Welcome } from 'web/components/onboarding/welcome'
 import { useRedirectIfSignedOut } from 'web/hooks/use-redirect-if-signed-out'
 import { useSaveReferral } from 'web/hooks/use-save-referral'
@@ -21,7 +21,10 @@ export default function Home() {
     <Page trackPageView={'home'} className="lg:px-4">
       <Welcome />
       <SEO title={`Home`} description={`Browse all questions`} url={`/home`} />
-      <DowntimeBanner />
+      <Banner className="bg-primary-100 text-primary-700 dark:text-primary-800 items-center py-2">
+        We&apos;re currently experiencing an outage due to Vercel issues. Market
+        pages are unavailable.
+      </Banner>
       <DailyStats className="z-50 mb-1 w-full px-2 py-2" user={user} />
       <BrowsePageContent />
       {user && (
