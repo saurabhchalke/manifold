@@ -102,5 +102,8 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": "tsc-files --noEmit --incremental false"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
