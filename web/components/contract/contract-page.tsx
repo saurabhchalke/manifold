@@ -96,6 +96,7 @@ export function ContractPageContent(props: ContractParams) {
 
   // Just use the contract that was navigated to directly
   const liveContract = useLiveContract(props.contract)
+
   const user = useUser()
 
   useSaveReferral(user, {
