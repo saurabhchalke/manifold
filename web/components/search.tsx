@@ -967,7 +967,7 @@ export const useSearchResults = (props: {
         const postApiParams: APIParams<'get-posts'> = {
           sortBy: sort === 'score' ? 'importance_score' : 'created_time',
           term: query,
-          limit: sort === 'score' ? 2 : 5,
+          limit: sort === 'score' ? 1 : 5,
           userId: additionalFilter?.creatorId,
           offset: freshQuery ? 0 : state.posts?.length ?? 0,
         }
