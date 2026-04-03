@@ -1171,7 +1171,6 @@ export const API = (_apiTypeCheck = {
     method: 'GET',
     visibility: 'public',
     authed: true,
-    cache: DEFAULT_CACHE_STRATEGY,
     props: z.object({}),
     returns: {} as FullUser,
   },
