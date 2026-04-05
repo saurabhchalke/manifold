@@ -40,7 +40,11 @@ export const EditableTopicName = (props: {
           }
         }}
       />
-      <IconButton aria-label="Save topic name" onClick={() => onSave(text)} size="xs">
+      <IconButton
+        aria-label="Save topic name"
+        onClick={() => onSave(text)}
+        size="xs"
+      >
         <CheckIcon className="h-4 w-4 text-teal-600" />
       </IconButton>
       <IconButton

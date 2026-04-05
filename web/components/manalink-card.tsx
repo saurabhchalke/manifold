@@ -54,8 +54,8 @@ export function ManalinkCard(props: {
           </div>
         </Col>
 
-          <Logo
-            aria-hidden="true"
+        <Logo
+          aria-hidden="true"
           className={clsx(
             'block h-1/3 w-1/3 self-center stroke-white transition-all group-hover:rotate-12',
             preview ? 'my-2' : 'w-1/2 md:mb-6 md:h-1/2'
@@ -157,7 +157,9 @@ export function ManalinkCardFromView(props: {
           />
           <IconButton
             size="xs"
-            aria-label={showDetails ? 'Hide claim details' : 'Show claim details'}
+            aria-label={
+              showDetails ? 'Hide claim details' : 'Show claim details'
+            }
             onClick={() => setShowDetails(!showDetails)}
             className={clsx(
               showDetails ? ' text-primary-600 hover:text-primary-700' : ''

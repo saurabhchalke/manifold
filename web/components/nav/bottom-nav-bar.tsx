@@ -140,7 +140,7 @@ export function BottomNavBar() {
     >
       <ul
         role="list"
-        className="list-none m-0 flex w-full items-center justify-between p-0"
+        className="m-0 flex w-full list-none items-center justify-between p-0"
       >
         {navigationOptions.map((item) => (
           <li key={item.name} className="flex-1">

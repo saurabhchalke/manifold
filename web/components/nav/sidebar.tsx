@@ -186,7 +186,7 @@ export default function Sidebar(props: {
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
-      <ul role="list" className="list-none m-0 mb-4 flex flex-col gap-1 p-0">
+      <ul role="list" className="m-0 mb-4 flex list-none flex-col gap-1 p-0">
         {navOptions.map((item) => (
           <li key={item.name}>
             {item.name === 'Shop' && isAprilFools() ? (
@@ -216,7 +216,7 @@ export default function Sidebar(props: {
       <ul
         role="list"
         className={clsx(
-          'list-none m-0 mb-6 mt-auto flex flex-col gap-1 p-0',
+          'm-0 mb-6 mt-auto flex list-none flex-col gap-1 p-0',
           isMobile && 'pb-8'
         )}
       >

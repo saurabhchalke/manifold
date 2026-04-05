@@ -42,7 +42,12 @@ function onTabKeyDown(
   activateTab: (index: number) => void,
   focusTab: (index: number) => void
 ) {
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End')
+  if (
+    e.key !== 'ArrowLeft' &&
+    e.key !== 'ArrowRight' &&
+    e.key !== 'Home' &&
+    e.key !== 'End'
+  )
     return
 
   e.preventDefault()

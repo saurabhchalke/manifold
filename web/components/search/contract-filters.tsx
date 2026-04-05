@@ -124,8 +124,8 @@ export function ContractFilters(props: {
       track('select liquidity tier', { tier: selection })
       setAnnouncement(
         `Selected liquidity filter ${
-          LIQUIDITY_TIER_LABELS.find((tier) => tier.value === selection)?.label ??
-          selection
+          LIQUIDITY_TIER_LABELS.find((tier) => tier.value === selection)
+            ?.label ?? selection
         }`
       )
     }
@@ -260,10 +260,14 @@ export function ContractFilters(props: {
             onSelect={() => {
               if (sort === sortValue) {
                 selectSort(DEFAULT_SORT)
-                setAnnouncement(`Removed sort ${getLabelFromValue(SORTS, sortValue)}`)
+                setAnnouncement(
+                  `Removed sort ${getLabelFromValue(SORTS, sortValue)}`
+                )
               } else {
                 selectSort(sortValue as Sort)
-                setAnnouncement(`Selected sort ${getLabelFromValue(SORTS, sortValue)}`)
+                setAnnouncement(
+                  `Selected sort ${getLabelFromValue(SORTS, sortValue)}`
+                )
               }
             }}
           >
@@ -283,7 +287,9 @@ export function ContractFilters(props: {
                 hb: hasBets === '1' ? '0' : '1',
               })
               setAnnouncement(
-                hasBets === '1' ? 'Removed Your bets filter' : 'Selected Your bets filter'
+                hasBets === '1'
+                  ? 'Removed Your bets filter'
+                  : 'Selected Your bets filter'
               )
             }}
           >
@@ -512,7 +518,10 @@ function FilterModal(props: {
           aria-labelledby="filter-section-sorts"
           className="gap-2"
         >
-          <Row id="filter-section-sorts" className="items-center gap-1 font-semibold">
+          <Row
+            id="filter-section-sorts"
+            className="items-center gap-1 font-semibold"
+          >
             <FaSortAmountDownAlt className="h-4 w-4" />
             Sorts
           </Row>

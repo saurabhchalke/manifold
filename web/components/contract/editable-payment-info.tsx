@@ -36,10 +36,18 @@ export const EditablePaymentInfo = () => {
         onChange={(e) => setPaymentInfo(e.target.value || '')}
         autoFocus
       />
-      <IconButton aria-label="Save payment information" onClick={() => onSave(paymentInfo)} className="p-1">
+      <IconButton
+        aria-label="Save payment information"
+        onClick={() => onSave(paymentInfo)}
+        className="p-1"
+      >
         <CheckIcon className="h-4 w-4 text-teal-600" />
       </IconButton>
-      <IconButton aria-label="Cancel editing payment information" onClick={() => setEditing(false)} className="p-1">
+      <IconButton
+        aria-label="Cancel editing payment information"
+        onClick={() => setEditing(false)}
+        className="p-1"
+      >
         <XIcon className="text-scarlet-400 h-4 w-4" />
       </IconButton>
     </div>

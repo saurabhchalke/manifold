@@ -43,10 +43,18 @@ export const EditableModNote = ({
         onChange={(e) => setModNote(e.target.value || '')}
         autoFocus
       />
-      <IconButton aria-label="Save moderator note" onClick={handleSave} className="p-1">
+      <IconButton
+        aria-label="Save moderator note"
+        onClick={handleSave}
+        className="p-1"
+      >
         <CheckIcon className="h-4 w-4 text-teal-600" />
       </IconButton>
-      <IconButton aria-label="Cancel editing moderator note" onClick={handleCancel} className="p-1">
+      <IconButton
+        aria-label="Cancel editing moderator note"
+        onClick={handleCancel}
+        className="p-1"
+      >
         <XIcon className="text-scarlet-400 h-4 w-4" />
       </IconButton>
     </Row>

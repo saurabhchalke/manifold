@@ -90,7 +90,9 @@ export function BetButton(props: {
         <Button
           size="2xs"
           color={'indigo-outline'}
-          aria-label={`${capitalize(TRADE_TERM)} on ${questionTitle ?? contract.question}`}
+          aria-label={`${capitalize(TRADE_TERM)} on ${
+            questionTitle ?? contract.question
+          }`}
           aria-haspopup="dialog"
           onClick={(e) => {
             e.preventDefault()

@@ -32,7 +32,7 @@ export const ClickFrame = forwardRef(
       onKeyDown,
     } = props
     const isKeyboardInteractive = tabIndex >= 0
-    const resolvedRole = isKeyboardInteractive ? (role ?? 'button') : undefined
+    const resolvedRole = isKeyboardInteractive ? role ?? 'button' : undefined
 
     const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
       if (
@@ -48,7 +48,7 @@ export const ClickFrame = forwardRef(
     return (
       <div
         className={clsx(
-          'stop-prop cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-500',
+          'stop-prop focus-visible:ring-primary-500 cursor-pointer focus-visible:ring-2',
           className
         )}
         role={resolvedRole}

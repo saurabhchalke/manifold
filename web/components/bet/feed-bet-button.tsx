@@ -86,7 +86,9 @@ export function BetButton(props: {
           )}
         >
           <Col>
-            <h2 className="mb-4 mt-0 text-xl">{questionTitle ?? contract.question}</h2>
+            <h2 className="mb-4 mt-0 text-xl">
+              {questionTitle ?? contract.question}
+            </h2>
             <BuyPanel
               contract={contract}
               initialOutcome={dialogueThatIsOpen === 'YES' ? 'YES' : 'NO'}
