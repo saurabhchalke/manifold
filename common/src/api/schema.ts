@@ -2252,7 +2252,7 @@ export const API = (_apiTypeCheck = {
   'get-next-loan-amount': {
     method: 'GET',
     visibility: 'undocumented',
-    cache: DEFAULT_CACHE_STRATEGY,
+    cache: LIGHT_CACHE_STRATEGY,
     authed: false,
     returns: {} as {
       maxGeneralLoan: number
@@ -2278,7 +2278,7 @@ export const API = (_apiTypeCheck = {
   'get-market-loan-max': {
     method: 'GET',
     visibility: 'undocumented',
-    cache: DEFAULT_CACHE_STRATEGY,
+    cache: LIGHT_CACHE_STRATEGY,
     authed: true,
     returns: {} as {
       maxLoan: number
@@ -2315,7 +2315,7 @@ export const API = (_apiTypeCheck = {
   'get-free-loan-available': {
     method: 'GET',
     visibility: 'undocumented',
-    cache: DEFAULT_CACHE_STRATEGY,
+    cache: LIGHT_CACHE_STRATEGY,
     authed: false,
     returns: {} as {
       available: number
