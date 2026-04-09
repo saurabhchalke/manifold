@@ -8,6 +8,7 @@ import { useUser } from 'web/hooks/use-user'
 import { LoadingIndicator } from 'web/components/widgets/loading-indicator'
 import { Avatar } from 'web/components/widgets/avatar'
 import { RestrictedBadge, UserLink } from 'web/components/widgets/user-link'
+import { Button } from 'web/components/buttons/button'
 import { formatMoney } from 'common/util/format'
 import type { User } from 'common/user'
 import clsx from 'clsx'
@@ -43,6 +44,7 @@ export default function AdminNewUsersPage() {
 function NewUsersTable() {
   const { data, refresh } = useAPIGetter('admin-get-new-users', { limit: 100 })
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [ipBanningId, setIpBanningId] = useState<string | null>(null)
 
   if (data === undefined) {
     return <LoadingIndicator />
@@ -67,6 +69,29 @@ function NewUsersTable() {
       toast.error('Failed to update bonus eligibility')
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  const handleIpBan = async (userId: string, ipAddress: string | null) => {
+    if (!ipAddress) return
+    const confirmed = window.confirm(
+      `Block future signups from ${ipAddress}?`
+    )
+    if (!confirmed) return
+
+    setIpBanningId(userId)
+    try {
+      const result = await api('admin-ip-ban-user', { userId })
+      toast.success(
+        result.added
+          ? `IP blocked: ${result.ipAddress}`
+          : `IP already blocked: ${result.ipAddress}`
+      )
+      refresh()
+    } catch (e) {
+      toast.error('Failed to IP ban user')
+    } finally {
+      setIpBanningId(null)
     }
   }
 
@@ -193,7 +218,17 @@ function NewUsersTable() {
                 </select>
               </td>
               <td className="px-4 py-3">
-                <SuperBanControl userId={u.id} onBan={refresh} />
+                <Row className="gap-2">
+                  <Button
+                    color="yellow-outline"
+                    size="xs"
+                    disabled={!u.ipAddress || ipBanningId === u.id}
+                    onClick={() => handleIpBan(u.id, u.ipAddress)}
+                  >
+                    {ipBanningId === u.id ? 'Blocking...' : 'IP ban'}
+                  </Button>
+                  <SuperBanControl userId={u.id} onBan={refresh} />
+                </Row>
               </td>
             </tr>
           ))}

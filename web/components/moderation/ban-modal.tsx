@@ -28,6 +28,7 @@ import { Title } from 'web/components/widgets/title'
 import { Tooltip } from 'web/components/widgets/tooltip'
 import { api } from 'web/lib/api/api'
 import { getUserById } from 'web/lib/supabase/users'
+import { useAdmin } from 'web/hooks/use-admin'
 
 export function BanModal({
   user,
@@ -40,6 +41,7 @@ export function BanModal({
   isOpen: boolean
   onClose: () => void
 }) {
+  const isAdmin = useAdmin()
   const [banTypes, setBanTypes] = useState({
     posting: false,
     marketControl: false,
@@ -57,6 +59,7 @@ export function BanModal({
   const [reason, setReason] = useState('')
   const [modAlertOnly, setModAlertOnly] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isIpBanSubmitting, setIsIpBanSubmitting] = useState(false)
   const [showCurrentBans, setShowCurrentBans] = useState(true)
   const [showBanHistory, setShowBanHistory] = useState(false)
   const [modNames, setModNames] = useState<Record<string, string>>({})
@@ -244,6 +247,30 @@ export function BanModal({
     }
   }
 
+  const handleIpBan = async () => {
+    const confirmed = window.confirm(
+      `Block future signups from ${user.name}'s signup IP?`
+    )
+    if (!confirmed) return
+
+    setIsIpBanSubmitting(true)
+    try {
+      const result = await api('admin-ip-ban-user', { userId: user.id })
+      toast.success(
+        result.added
+          ? `IP blocked: ${result.ipAddress}`
+          : `IP already blocked: ${result.ipAddress}`
+      )
+    } catch (error) {
+      toast.error(
+        'Failed to IP ban user: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      )
+    } finally {
+      setIsIpBanSubmitting(false)
+    }
+  }
+
   const anyBanSelected = Object.values(banTypes).some((v) => v)
 
   return (
@@ -253,6 +280,29 @@ export function BanModal({
 
         {/* Bonus Eligibility Section */}
         <BonusEligibilityControl user={user} />
+
+        {isAdmin && (
+          <div className="border-ink-200 rounded border">
+            <div className="space-y-3 p-3">
+              <div>
+                <span className="font-semibold">Signup IP</span>
+                <p className="text-ink-600 mt-1 text-sm">
+                  Admin-only action. Adds this user's recorded signup IP to the
+                  signup blocklist to prevent future account creation.
+                </p>
+              </div>
+              <Button
+                color="yellow-outline"
+                size="xs"
+                loading={isIpBanSubmitting}
+                disabled={isIpBanSubmitting}
+                onClick={handleIpBan}
+              >
+                IP ban
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Current Bans/Alerts Section */}
         {hasCurrentBansOrAlerts && (

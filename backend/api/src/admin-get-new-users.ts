@@ -20,6 +20,7 @@ export const adminGetNewUsers: APIHandler<'admin-get-new-users'> = async (
     avatar_url: string
     balance: number
     is_banned_from_posting: boolean
+    is_ip_banned: boolean
     referred_by_user_id: string | null
     referred_by_username: string | null
     referred_by_name: string | null
@@ -36,6 +37,12 @@ export const adminGetNewUsers: APIHandler<'admin-get-new-users'> = async (
       u.data->>'avatarUrl' as avatar_url,
       u.balance,
       coalesce((u.data->>'isBannedFromPosting')::boolean, false) as is_banned_from_posting,
+      exists(
+        select 1
+        from signup_blocklist sb
+        where sb.entry_type = 'ip'
+          and sb.value = pu.data->>'initialIpAddress'
+      ) as is_ip_banned,
       u.data->>'referredByUserId' as referred_by_user_id,
       ref.username as referred_by_username,
       ref.name as referred_by_name,
@@ -59,6 +66,7 @@ export const adminGetNewUsers: APIHandler<'admin-get-new-users'> = async (
     avatarUrl: row.avatar_url,
     balance: row.balance,
     isBannedFromPosting: row.is_banned_from_posting,
+    isIpBanned: row.is_ip_banned,
     referredByUserId: row.referred_by_user_id,
     referredByUsername: row.referred_by_username,
     referredByName: row.referred_by_name,

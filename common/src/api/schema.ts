@@ -1568,6 +1568,17 @@ export const API = (_apiTypeCheck = {
       .strict(),
     returns: {} as { success: boolean; skippedMarketCleanup: boolean },
   },
+  'admin-ip-ban-user': {
+    method: 'POST',
+    visibility: 'undocumented',
+    authed: true,
+    props: z
+      .object({
+        userId: z.string(),
+      })
+      .strict(),
+    returns: {} as { success: boolean; added: boolean; ipAddress: string },
+  },
   'get-user-bans': {
     method: 'GET',
     visibility: 'undocumented',
