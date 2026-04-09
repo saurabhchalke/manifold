@@ -543,7 +543,6 @@ export default function SweepstakesPage({
             setManaAmount={setManaAmount}
             numTickets={numTickets}
             currentPrice={currentPrice}
-            totalTickets={totalTickets}
             isSubmitting={isSubmitting}
             handleBuyTickets={handleBuyTickets}
             hasClaimedFreeTicket={hasClaimedFreeTicket ?? false}
@@ -929,7 +928,6 @@ function PurchaseForm(props: {
   setManaAmount: (amount: number) => void
   numTickets: number
   currentPrice: number
-  totalTickets: number
   isSubmitting: boolean
   handleBuyTickets: () => void
   hasClaimedFreeTicket: boolean
@@ -942,7 +940,6 @@ function PurchaseForm(props: {
     setManaAmount,
     numTickets,
     currentPrice,
-    totalTickets,
     isSubmitting,
     handleBuyTickets,
     hasClaimedFreeTicket,
@@ -995,9 +992,15 @@ function PurchaseForm(props: {
 
         {/* Amount Input */}
         <Col className="gap-2">
-          <label className="text-ink-700 text-sm font-medium">
-            Gain additional entries
-          </label>
+          <Row className="items-center gap-1">
+            <label className="text-ink-700 text-sm font-medium">
+              Gain additional entries
+            </label>
+            <InfoTooltip
+              text={`Current rate: ${formatMoneyWithDecimals(currentPrice)} per entry. Rates follow a bonding curve—earlier entries require less mana.`}
+              size="sm"
+            />
+          </Row>
           <Row className="items-center gap-2">
             <Row className="bg-canvas-50 border-canvas-100 flex-1 items-center gap-1.5 rounded-lg border px-3 py-2">
               <ManaCoin />
@@ -1035,34 +1038,6 @@ function PurchaseForm(props: {
             ))}
           </Row>
         </Col>
-
-        {/* Summary */}
-        <div className="bg-canvas-50 rounded-lg p-4">
-          <Row className="text-ink-600 items-center justify-between text-sm">
-            <Row className="items-center gap-1">
-              <span>Mana per entry</span>
-              <InfoTooltip
-                text="Entry rates follow a bonding curve—earlier entries require less mana."
-                size="sm"
-              />
-            </Row>
-            <span className="font-medium">
-              {formatMoneyWithDecimals(currentPrice)}
-            </span>
-          </Row>
-          <Row className="text-ink-600 mt-2 items-center justify-between text-sm">
-            <span>Total entries</span>
-            <span>{formatEntries(totalTickets)} entries</span>
-          </Row>
-          <div className="border-canvas-200 mt-3 border-t pt-3">
-            <Row className="items-center justify-between">
-              <span className="text-ink-900 font-medium">You'll get</span>
-              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                {formatEntries(numTickets)} entries
-              </span>
-            </Row>
-          </div>
-        </div>
 
         {/* Enter Button */}
         <Button

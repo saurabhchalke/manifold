@@ -154,11 +154,6 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
     return () => clearInterval(interval)
   }, [giveaway?.closeTime])
 
-  const selectedCharityStats = charityStats.find(
-    (s) => s.charityId === selectedCharityId
-  )
-  const currentCharityTickets = selectedCharityStats?.totalTickets ?? 0
-
   const prizeAmountUsd = giveaway?.prizeAmountUsd ?? 0
 
   const numTickets = useMemo(() => {
@@ -482,8 +477,6 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
             setManaAmount={setManaAmount}
             numTickets={numTickets}
             currentPrice={currentPrice}
-            totalTickets={totalTickets}
-            currentCharityTickets={currentCharityTickets}
             isSubmitting={isSubmitting}
             handleBuyTickets={handleBuyTickets}
           />
@@ -638,8 +631,6 @@ function PurchaseForm(props: {
   setManaAmount: (amount: number) => void
   numTickets: number
   currentPrice: number
-  totalTickets: number
-  currentCharityTickets: number
   isSubmitting: boolean
   handleBuyTickets: () => void
 }) {
@@ -652,8 +643,6 @@ function PurchaseForm(props: {
     setManaAmount,
     numTickets,
     currentPrice,
-    totalTickets,
-    currentCharityTickets,
     isSubmitting,
     handleBuyTickets,
   } = props
@@ -729,9 +718,15 @@ function PurchaseForm(props: {
         {selectedCharityId && (
           <>
             <Col className="gap-2">
-              <label className="text-ink-700 text-sm font-medium">
-                Amount to convert
-              </label>
+              <Row className="items-center gap-1">
+                <label className="text-ink-700 text-sm font-medium">
+                  Amount to convert
+                </label>
+                <InfoTooltip
+                  text={`Current rate: ${formatMoneyWithDecimals(currentPrice)} per entry. Entries follow a bonding curve — earlier entries cost less mana.`}
+                  size="sm"
+                />
+              </Row>
               <Row className="items-center gap-2">
                 <Row className="bg-canvas-50 border-canvas-100 flex-1 items-center gap-1.5 rounded-lg border px-3 py-2">
                   <ManaCoin />
@@ -769,43 +764,6 @@ function PurchaseForm(props: {
                 ))}
               </Row>
             </Col>
-
-            {/* Summary */}
-            <div className="bg-canvas-50 rounded-lg p-4">
-              <Row className="text-ink-600 items-center justify-between text-sm">
-                <Row className="items-center gap-1">
-                  <span>Conversion rate</span>
-                  <InfoTooltip
-                    text="Entries follow a bonding curve — earlier entries cost less mana."
-                    size="sm"
-                  />
-                </Row>
-                <span className="font-medium">
-                  {formatMoneyWithDecimals(currentPrice)}
-                </span>
-              </Row>
-              <Row className="text-ink-600 mt-2 items-center justify-between text-sm">
-                <span>Total sold</span>
-                <span>{formatEntries(totalTickets)} entries</span>
-              </Row>
-              {currentCharityTickets > 0 && (
-                <Row className="text-ink-600 mt-2 items-center justify-between text-sm">
-                  <span>
-                    {charities.find((c) => c.id === selectedCharityId)?.name}'s
-                    entries
-                  </span>
-                  <span>{formatEntries(currentCharityTickets)}</span>
-                </Row>
-              )}
-              <div className="border-canvas-200 mt-3 border-t pt-3">
-                <Row className="items-center justify-between">
-                  <span className="text-ink-900 font-medium">You'll get</span>
-                  <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                    {formatEntries(numTickets)} entries
-                  </span>
-                </Row>
-              </div>
-            </div>
 
             {/* Buy Button */}
             <Button
