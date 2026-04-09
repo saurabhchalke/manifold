@@ -4,6 +4,7 @@ import { getIp } from 'shared/analytics'
 import { isSweepstakesLocationAllowed } from 'shared/ip-geolocation'
 import { getUser } from 'shared/utils'
 import { canReceiveBonuses } from 'common/user'
+import { isAdminId } from 'common/envs/constants'
 import { SWEEPSTAKES_MIN_MANA_INVESTED } from 'common/sweepstakes'
 
 const FREE_TICKET_AMOUNT = 1 // One free ticket per user per sweepstakes
@@ -44,6 +45,9 @@ export const claimFreeSweepstakesTicket: APIHandler<
     const user = await getUser(auth.uid, tx)
     if (!user) {
       throw new APIError(404, 'User not found')
+    }
+    if (isAdminId(user.id)) {
+      throw new APIError(403, 'Admins cannot participate in the sweepstakes')
     }
     if (!canReceiveBonuses(user)) {
       throw new APIError(

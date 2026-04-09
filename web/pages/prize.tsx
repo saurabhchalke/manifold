@@ -147,6 +147,7 @@ export default function SweepstakesPage({
 
   // Check if user needs to verify before participating
   const needsVerification = user && !canReceiveBonuses(user)
+  const isAdminIneligible = !!user && isAdmin
 
   const sweepstakes = data ? data.sweepstakes : undefined
   const userStats = data ? data.userStats : []
@@ -466,6 +467,14 @@ export default function SweepstakesPage({
           </div>
         )}
 
+        {!isLocationRestricted && isAdminIneligible && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+            <p className="text-amber-800 dark:text-amber-300">
+              Admin accounts cannot participate in the prize drawing.
+            </p>
+          </div>
+        )}
+
         {/* Investment Requirement Banner */}
         {!isLocationRestricted &&
           !needsVerification &&
@@ -536,6 +545,7 @@ export default function SweepstakesPage({
             handleClaimFreeTicket={handleClaimFreeTicket}
             disabled={
               isLocationRestricted ||
+              isAdminIneligible ||
               !!needsVerification ||
               !meetsInvestmentRequirement
             }
