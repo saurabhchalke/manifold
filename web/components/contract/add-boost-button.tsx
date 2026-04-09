@@ -113,6 +113,8 @@ function AdminRemoveBoostButton(props: {
   return (
     <Button
       color="red-outline"
+      size="xs"
+      className="self-start"
       loading={isRemoving}
       disabled={isRemoving}
       onClick={removeBoost}
