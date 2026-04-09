@@ -6,6 +6,7 @@ import {
   URL_REGEX,
   VIETNAMESE_GAMBLING_TERMS,
 } from 'common/spam-terms'
+import { PRE_KYC_STARTING_BALANCE } from 'common/economy'
 import { MANIFOLD_USER_USERNAME } from 'common/user'
 import { DAY_MS } from 'common/util/time'
 import { superBanUserCore } from 'shared/helpers/super-ban'
@@ -22,6 +23,7 @@ type CandidateUserRow = {
   userData: {
     avatarUrl?: string
     bio?: string
+    website?: string
     referredByUserId?: string
   }
   privateData: {
@@ -41,6 +43,10 @@ const SCORE_BY_SIGNAL = {
   gamblingRegex: 50,
   domainSuffix: 40,
   bioUrl: 40,
+  bioVietnameseTerm: 100,
+  bioBrandName: 80,
+  bioGamblingRegex: 50,
+  websiteUrl: 30,
   exactIp: 40,
   exactDeviceToken: 40,
   subnetIp: 25,
@@ -213,7 +219,7 @@ export async function autobanUsers({ lastEndTime }: JobContext) {
 
   for (const candidate of candidates) {
     const hasBets = usersWithBets.has(candidate.id)
-    if (candidate.balance > 0 || hasBets) continue
+    if (candidate.balance > PRE_KYC_STARTING_BALANCE || hasBets) continue
 
     const referrerId = candidate.userData.referredByUserId
     if (referrerId && safeReferrerIds.has(referrerId)) continue
@@ -228,6 +234,36 @@ export async function autobanUsers({ lastEndTime }: JobContext) {
     if (bio && URL_REGEX.test(bio)) {
       signals.push('bio-url')
       score += SCORE_BY_SIGNAL.bioUrl
+    }
+
+    const normalizedBio = normalizeSpamText(bio)
+
+    const bioVietnameseTerm = VIETNAMESE_GAMBLING_TERMS.find((term) =>
+      normalizedBio.includes(term)
+    )
+    if (bioVietnameseTerm) {
+      signals.push(`bio-vietnamese-term:${bioVietnameseTerm}`)
+      score += SCORE_BY_SIGNAL.bioVietnameseTerm
+    }
+
+    const bioBrandMatch = GAMBLING_BRAND_NAMES.find((brand) =>
+      normalizedBio.includes(brand)
+    )
+    if (bioBrandMatch) {
+      signals.push(`bio-brand:${bioBrandMatch}`)
+      score += SCORE_BY_SIGNAL.bioBrandName
+    }
+
+    const bioRegexMatch = GAMBLING_REGEXES.find((regex) => regex.test(bio))
+    if (bioRegexMatch) {
+      signals.push(`bio-regex:${bioRegexMatch.source}`)
+      score += SCORE_BY_SIGNAL.bioGamblingRegex
+    }
+
+    const website = candidate.userData.website ?? ''
+    if (website) {
+      signals.push('has-website')
+      score += SCORE_BY_SIGNAL.websiteUrl
     }
 
     const initialIpAddress = candidate.privateData.initialIpAddress
