@@ -24,6 +24,7 @@ import { getUser, getUserByUsername, isProd, log } from 'shared/utils'
 
 import { ValidatedAPIParams } from 'common/api/schema'
 import { APIError } from 'common/api/utils'
+import { PRE_KYC_STARTING_BALANCE } from 'common/economy'
 import { convertPrivateUser, convertUser } from 'common/supabase/users'
 import { onCreateUser } from 'shared/helpers/on-create-user'
 import { insert } from 'shared/supabase/utils'
@@ -133,6 +134,8 @@ export const createUserMain = async (
       id: userId,
       name: name,
       username: username,
+      balance: PRE_KYC_STARTING_BALANCE,
+      total_deposits: PRE_KYC_STARTING_BALANCE,
       data: userData,
     })
 
