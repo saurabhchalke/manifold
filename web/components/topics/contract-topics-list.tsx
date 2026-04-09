@@ -9,9 +9,9 @@ import { Col } from 'web/components/layout/col'
 import { Row } from 'web/components/layout/row'
 import { TopicTag } from 'web/components/topics/topic-tag'
 import { useUser } from 'web/hooks/use-user'
-import { useSearchGroups } from './topic-selector'
 import { CreateTopicModal } from './create-topic-modal'
 import { PRIVACY_STATUS_ITEMS } from './topic-privacy-modal'
+import { useSearchGroups } from './topic-selector'
 
 export function ContractTopicsList(props: {
   canEdit: boolean
@@ -28,8 +28,7 @@ export function ContractTopicsList(props: {
 
   const { query, setQuery, searchedGroups, loading } = useSearchGroups(true)
 
-  const atMax =
-    topics.length >= MAX_GROUPS_PER_MARKET
+  const atMax = topics.length >= MAX_GROUPS_PER_MARKET
 
   const selectedIds = new Set(topics.map((t) => t.id))
   const filteredGroups = searchedGroups.filter((g) => !selectedIds.has(g.id))
@@ -69,7 +68,7 @@ export function ContractTopicsList(props: {
                   className="text-ink-400 hover:text-ink-700 hover:bg-ink-200 ml-0.5 rounded-full p-0.5 transition-colors"
                   onClick={() => {
                     toast.promise(removeTopic(t), {
-                      loading: `Removing "${t.name}"…`,
+                      loading: `Removing "${t.name}"...`,
                       success: `Removed "${t.name}"`,
                       error: `Error removing topic. Try again?`,
                     })
@@ -100,7 +99,7 @@ export function ContractTopicsList(props: {
               placeholder={
                 atMax
                   ? `Limit of ${MAX_GROUPS_PER_MARKET} topics reached`
-                  : 'Search topics…'
+                  : 'Search topics...'
               }
               className={clsx(
                 'bg-canvas-0 w-full rounded-md border py-2.5 pl-9 pr-4 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1',
