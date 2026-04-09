@@ -68,7 +68,7 @@ export function ContractTopicsList(props: {
                   className="text-ink-400 hover:text-ink-700 hover:bg-ink-200 ml-0.5 rounded-full p-0.5 transition-colors"
                   onClick={() => {
                     toast.promise(removeTopic(t), {
-                      loading: `Removing "${t.name}"...`,
+                      loading: `Removing "${t.name}"…`,
                       success: `Removed "${t.name}"`,
                       error: `Error removing topic. Try again?`,
                     })

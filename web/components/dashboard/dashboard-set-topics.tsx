@@ -36,7 +36,7 @@ export function DashboardSetTopics(props: {
             className="bg-ink-100 hover:bg-ink-200"
           >
             <button
-              className="text-ink-400 hover:text-ink-700 ml-0.5 rounded-full p-0.5 transition-colors hover:bg-ink-200"
+              className="text-ink-400 hover:text-ink-700 hover:bg-ink-200 ml-0.5 rounded-full p-0.5 transition-colors"
               onClick={() => {
                 const cleared = selectedGroups.filter((g) => g.id !== group.id)
                 setSelectedGroups(cleared)
