@@ -1055,27 +1055,28 @@ function BonusEligibilitySection({
           </Row>
         </div>
 
-        {selectedEligibility && selectedEligibility !== user.bonusEligibility && (
-          <Row className="mt-3 gap-2">
-            <Button
-              onClick={handleUpdate}
-              loading={isUpdating}
-              disabled={isUpdating}
-              color="indigo"
-              size="sm"
-            >
-              Update Eligibility
-            </Button>
-            <Button
-              onClick={() => setSelectedEligibility(user.bonusEligibility)}
-              disabled={isUpdating}
-              color="gray-outline"
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </Row>
-        )}
+        {selectedEligibility &&
+          selectedEligibility !== user.bonusEligibility && (
+            <Row className="mt-3 gap-2">
+              <Button
+                onClick={handleUpdate}
+                loading={isUpdating}
+                disabled={isUpdating}
+                color="indigo"
+                size="sm"
+              >
+                Update Eligibility
+              </Button>
+              <Button
+                onClick={() => setSelectedEligibility(user.bonusEligibility)}
+                disabled={isUpdating}
+                color="gray-outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </Row>
+          )}
       </div>
 
       <div className="mt-3 rounded border border-blue-200 bg-blue-50 p-3">

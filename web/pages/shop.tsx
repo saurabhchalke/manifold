@@ -2341,9 +2341,7 @@ function PrizeDrawingCard() {
           </Row>
 
           {/* Description */}
-          <p className="text-ink-600 mb-3 text-sm">
-            Win USDC prizes!
-          </p>
+          <p className="text-ink-600 mb-3 text-sm">Win USDC prizes!</p>
 
           {/* CTA */}
           <Button

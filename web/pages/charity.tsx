@@ -74,9 +74,7 @@ const COLORS = [
   '#d946ef', // fuchsia
 ]
 
-export default function CharityGiveawayPage(props: {
-  giveawayNum?: number
-}) {
+export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
   const { giveawayNum } = props
   const user = useUser()
   const isAdmin = useAdmin()
@@ -96,8 +94,7 @@ export default function CharityGiveawayPage(props: {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [salesRefreshKey, setSalesRefreshKey] = useState(0)
 
-  const [showCreateGiveawayModal, setShowCreateGiveawayModal] =
-    useState(false)
+  const [showCreateGiveawayModal, setShowCreateGiveawayModal] = useState(false)
   const [newCloseTime, setNewCloseTime] = useState('')
   const [newPrizeAmount, setNewPrizeAmount] = useState('1000')
   const [isCreatingGiveaway, setIsCreatingGiveaway] = useState(false)
@@ -169,7 +166,10 @@ export default function CharityGiveawayPage(props: {
     return calculateTicketsFromMana(totalTickets, manaAmount, prizeAmountUsd)
   }, [totalTickets, manaAmount, prizeAmountUsd])
 
-  const currentPrice = getCurrentGiveawayTicketPrice(totalTickets, prizeAmountUsd)
+  const currentPrice = getCurrentGiveawayTicketPrice(
+    totalTickets,
+    prizeAmountUsd
+  )
   const isClosed = giveaway && giveaway.closeTime <= Date.now()
   const hasWinner = !!giveaway?.winningTicketId
 
@@ -816,8 +816,8 @@ function PurchaseForm(props: {
               disabled={!selectedCharityId || numTickets <= 0 || isSubmitting}
               className="w-full justify-center rounded-lg py-3 font-semibold"
             >
-              Convert {formatMoney(manaAmount)} into{' '}
-              {formatEntries(numTickets)} entries
+              Convert {formatMoney(manaAmount)} into {formatEntries(numTickets)}{' '}
+              entries
             </Button>
           </>
         )}
@@ -1354,7 +1354,9 @@ function ProvablyFairBanner(props: {
               </p>
               {hasWinner && blockHash && (
                 <Col className="bg-canvas-50 gap-2 rounded-lg p-3">
-                  <span className="text-ink-600 text-sm font-medium">Nonce</span>
+                  <span className="text-ink-600 text-sm font-medium">
+                    Nonce
+                  </span>
                   <code className="bg-canvas-100 text-ink-900 break-all rounded px-2 py-1 font-mono text-xs">
                     {blockHash}
                   </code>

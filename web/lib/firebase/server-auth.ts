@@ -53,16 +53,25 @@ export const redirectIfLoggedIn = <P extends { [k: string]: any }>(
         return { redirect: { destination: nativeDest, permanent: false } }
       }
       // Preserve query params when redirecting (e.g., for iDenfy verification results)
-      const queryString = Object.keys(restQuery).length > 0
-        ? '?' + Object.entries(restQuery)
-            .map(([key, value]) => {
-              if (Array.isArray(value)) {
-                return value.map(v => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`).join('&')
-              }
-              return `${encodeURIComponent(key)}=${encodeURIComponent(value ?? '')}`
-            })
-            .join('&')
-        : ''
+      const queryString =
+        Object.keys(restQuery).length > 0
+          ? '?' +
+            Object.entries(restQuery)
+              .map(([key, value]) => {
+                if (Array.isArray(value)) {
+                  return value
+                    .map(
+                      (v) =>
+                        `${encodeURIComponent(key)}=${encodeURIComponent(v)}`
+                    )
+                    .join('&')
+                }
+                return `${encodeURIComponent(key)}=${encodeURIComponent(
+                  value ?? ''
+                )}`
+              })
+              .join('&')
+          : ''
       const finalDest = dest + queryString
       console.debug(`Redirecting to ${finalDest}.`)
       return { redirect: { destination: finalDest, permanent: false } }

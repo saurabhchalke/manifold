@@ -67,7 +67,7 @@ export function VerificationResultModal() {
 function ApprovedContent({ onClose }: { onClose: () => void }) {
   return (
     <>
-      <CheckCircleIcon className="text-teal-500 mx-auto h-16 w-16" />
+      <CheckCircleIcon className="mx-auto h-16 w-16 text-teal-500" />
       <div className="text-primary-700 text-center text-2xl font-semibold">
         Identity Verified!
       </div>
@@ -133,7 +133,7 @@ function DeniedContent({ onClose }: { onClose: () => void }) {
 function UnverifiedContent({ onClose }: { onClose: () => void }) {
   return (
     <>
-      <ClockIcon className="text-amber-500 mx-auto h-16 w-16" />
+      <ClockIcon className="mx-auto h-16 w-16 text-amber-500" />
       <div className="text-ink-900 text-center text-2xl font-semibold">
         Verification Pending
       </div>

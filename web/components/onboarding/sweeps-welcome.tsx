@@ -68,9 +68,7 @@ export function SweepsWelcomePage() {
           }}
         />
       </Row>
-      <div>
-        {capitalize(TRADE_TERM)} on the answer you think is right.
-      </div>
+      <div>{capitalize(TRADE_TERM)} on the answer you think is right.</div>
       <div className="mt-2">
         Research shows wagering currency leads to more accurate predictions than
         polls.

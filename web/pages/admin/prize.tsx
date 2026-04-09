@@ -75,15 +75,12 @@ function PrizeClaimsTable() {
   const claims = data.claims
 
   // Group by sweepstakes number
-  const groupedClaims = claims.reduce(
-    (acc, claim) => {
-      const key = claim.sweepstakesNum
-      if (!acc[key]) acc[key] = []
-      acc[key].push(claim)
-      return acc
-    },
-    {} as Record<number, typeof claims>
-  )
+  const groupedClaims = claims.reduce((acc, claim) => {
+    const key = claim.sweepstakesNum
+    if (!acc[key]) acc[key] = []
+    acc[key].push(claim)
+    return acc
+  }, {} as Record<number, typeof claims>)
 
   // Generate CSV data for claims with wallet addresses
   const claimsWithWallets = claims.filter((c) => c.walletAddress)
@@ -132,12 +129,9 @@ function PrizeClaimsTable() {
                         <span
                           className={clsx(
                             'inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold',
-                            claim.rank === 1 &&
-                              'bg-amber-100 text-amber-700',
-                            claim.rank === 2 &&
-                              'bg-gray-100 text-gray-600',
-                            claim.rank === 3 &&
-                              'bg-orange-100 text-orange-700',
+                            claim.rank === 1 && 'bg-amber-100 text-amber-700',
+                            claim.rank === 2 && 'bg-gray-100 text-gray-600',
+                            claim.rank === 3 && 'bg-orange-100 text-orange-700',
                             claim.rank > 3 && 'bg-canvas-50 text-ink-500'
                           )}
                         >
@@ -249,8 +243,7 @@ function StatusSelector(props: {
           'border-amber-200 bg-amber-50 text-amber-700',
         currentStatus === 'sent' &&
           'border-green-200 bg-green-50 text-green-700',
-        currentStatus === 'rejected' &&
-          'border-red-200 bg-red-50 text-red-700',
+        currentStatus === 'rejected' && 'border-red-200 bg-red-50 text-red-700',
         disabled && 'cursor-not-allowed opacity-50'
       )}
     >

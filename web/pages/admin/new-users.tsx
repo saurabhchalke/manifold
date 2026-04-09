@@ -112,7 +112,11 @@ function NewUsersTable() {
               </td>
               <td className="px-4 py-3">
                 <Row className="items-center gap-2">
-                  <Avatar username={u.username} avatarUrl={u.avatarUrl} size="sm" />
+                  <Avatar
+                    username={u.username}
+                    avatarUrl={u.avatarUrl}
+                    size="sm"
+                  />
                   <UserLink
                     user={{
                       id: u.id,
@@ -122,7 +126,9 @@ function NewUsersTable() {
                   />
                 </Row>
               </td>
-              <td className="px-4 py-3 font-medium">{formatMoney(u.balance)}</td>
+              <td className="px-4 py-3 font-medium">
+                {formatMoney(u.balance)}
+              </td>
               <td className="px-4 py-3">
                 {u.referredByUserId ? (
                   <UserLink

@@ -3,10 +3,7 @@ import clsx from 'clsx'
 import { MANA_MIN_BET, SWEEPS_MIN_BET } from 'common/economy'
 import { ENV_CONFIG } from 'common/envs/constants'
 import { User } from 'common/user'
-import {
-  formatWithToken,
-  InputTokenType,
-} from 'common/util/format'
+import { formatWithToken, InputTokenType } from 'common/util/format'
 import Link from 'next/link'
 import { ReactNode, useEffect, useState } from 'react'
 import { useUser } from 'web/hooks/use-user'
