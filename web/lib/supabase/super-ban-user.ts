@@ -17,7 +17,7 @@ async function superBanUser(userId: string) {
     marketsStatus = 'not affected (>5)'
   }
 
-  // Apply all three ban types permanently (no unbanTime = permanent)
+  // Apply all ban types permanently (no unbanTime = permanent)
   try {
     await banUser({
       userId,
@@ -25,6 +25,7 @@ async function superBanUser(userId: string) {
         posting: true,
         marketControl: true,
         trading: true,
+        purchase: true,
       },
       reason: 'Superbanned by moderator',
     })
