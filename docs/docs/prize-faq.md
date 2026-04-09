@@ -173,6 +173,19 @@ There's no hard cap on entries. However, the bonding curve means each additional
 
 ---
 
+## How does the bonding curve math work?
+
+The price of each entry is determined by a simple linear bonding curve. If **B** is the base price (currently 0.10 mana) and **S** is a scale factor that grows with the total prize pool, then:
+
+- **Price of the *n*th entry** = B × (1 + n / S)
+- **Total cost to buy *t* entries** starting when *n* entries already exist = B × \[ t + (2nt + t²) / 2S \]
+
+The scale factor **S** equals the prize pool in dollars × 1,000. So for a **$1,000** drawing, S = 1,000,000. This means the first entry costs just 0.10 mana, the 100,000th entry costs about 0.20 mana, and the millionth entry costs about 1.10 mana. Bigger prize pools stretch the curve further so prices stay low longer.
+
+Because the cost function is quadratic, you can also go the other direction — given a mana budget, solve for how many entries you'll receive using the [quadratic formula](https://en.wikipedia.org/wiki/Quadratic_formula). The prize page does this automatically when you type in a mana amount.
+
+---
+
 ## Where are the full legal terms?
 
 The complete Official Rules are at [/prize-rules](/prize-rules). This FAQ is just a summary — the Official Rules govern if there's any conflict.
