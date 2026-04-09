@@ -14,9 +14,12 @@ import { base, mainnet } from 'wagmi/chains'
 import { injected, walletConnect } from 'wagmi/connectors'
 
 const centerModalStyles = `
-  /* Override Daimo's bottom-sheet positioning to center the modal */
-  .daimo-items-end {
-    align-items: center !important;
+  /* Override Daimo's desktop bottom-sheet positioning to center the modal */
+  @media (min-width: 640px) {
+    .daimo-modal-backdrop + .daimo-fixed.daimo-inset-x-0.daimo-bottom-0.daimo-z-50.daimo-flex.daimo-justify-center.daimo-pointer-events-none {
+      inset: 0 !important;
+      align-items: center !important;
+    }
   }
   /* @tailwindcss/forms adds padding to input[type="text"] which collapses
      Daimo's dynamic-width amount input (width: Nch) to 0px content area */
