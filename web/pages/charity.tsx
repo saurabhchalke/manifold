@@ -723,7 +723,9 @@ function PurchaseForm(props: {
                   Amount to convert
                 </label>
                 <InfoTooltip
-                  text={`Current rate: ${formatMoneyWithDecimals(currentPrice)} per entry. Entries follow a bonding curve — earlier entries cost less mana.`}
+                  text={`Current rate: ${formatMoneyWithDecimals(
+                    currentPrice
+                  )} per entry. Entries follow a bonding curve — earlier entries cost less mana.`}
                   size="sm"
                 />
               </Row>
