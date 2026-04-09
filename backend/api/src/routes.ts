@@ -142,6 +142,7 @@ import { placeBet } from './place-bet'
 import { setPushToken } from './push-token'
 import { addOrRemoveReaction } from './reaction'
 import { refreshAllClients } from './refresh-all-clients'
+import { removeBoost } from './remove-boost'
 import { removeLiquidity } from './remove-liquidity'
 import { resolveMarket } from './resolve-market'
 import { savePredicleResult } from './save-predictle-result'
@@ -459,6 +460,7 @@ export const handlers: { [k in APIPath]: APIHandler<k> } = {
   'get-contract-voters': getContractVoters,
   'get-contract-option-voters': getContractOptionVoters,
   'purchase-boost': purchaseContractBoost,
+  'remove-boost': removeBoost,
   'generate-ai-numeric-ranges': generateAINumericRanges,
   'regenerate-numeric-midpoints': regenerateNumericMidpoints,
   'infer-numeric-unit': inferNumericUnit,

@@ -2724,6 +2724,17 @@ export const API = (_apiTypeCheck = {
       ),
     returns: {} as { success: boolean; checkoutUrl?: string },
   },
+  'remove-boost': {
+    method: 'POST',
+    visibility: 'public',
+    authed: true,
+    props: z
+      .object({
+        contractId: z.string(),
+      })
+      .strict(),
+    returns: {} as { success: boolean },
+  },
   'generate-ai-numeric-ranges': {
     method: 'POST',
     visibility: 'public',

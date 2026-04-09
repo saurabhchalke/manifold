@@ -18,7 +18,7 @@ import { Input } from '../widgets/input'
 import { HOUR_MS } from 'common/util/time'
 import { formatMoney } from 'common/util/format'
 import { BoostAnalytics } from './boost-analytics'
-import { useAdminOrMod } from 'web/hooks/use-admin'
+import { useAdmin, useAdminOrMod } from 'web/hooks/use-admin'
 import Link from 'next/link'
 
 export function AddBoostButton(props: {
@@ -74,10 +74,51 @@ export function AddBoostButton(props: {
               Boost Analytics
             </Row>
             <BoostAnalytics contract={contract} />
+            <AdminRemoveBoostButton
+              contract={contract}
+              onRemoved={() => setShowAnalytics(false)}
+            />
           </Col>
         </Modal>
       )}
     </>
+  )
+}
+
+function AdminRemoveBoostButton(props: {
+  contract: Contract
+  onRemoved: () => void
+}) {
+  const { contract, onRemoved } = props
+  const [isRemoving, setIsRemoving] = useState(false)
+  const isAdmin = useAdmin()
+
+  if (!isAdmin || !contract.boosted) return null
+
+  const removeBoost = async () => {
+    setIsRemoving(true)
+    try {
+      await api('remove-boost', {
+        contractId: contract.id,
+      })
+      toast.success('Boost removed.')
+      onRemoved()
+    } catch (e) {
+      console.error(e)
+      toast.error(e instanceof Error ? e.message : 'Error removing boost')
+    }
+    setIsRemoving(false)
+  }
+
+  return (
+    <Button
+      color="red-outline"
+      loading={isRemoving}
+      disabled={isRemoving}
+      onClick={removeBoost}
+    >
+      Remove boost
+    </Button>
   )
 }
 
