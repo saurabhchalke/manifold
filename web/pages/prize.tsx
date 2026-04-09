@@ -997,7 +997,9 @@ function PurchaseForm(props: {
               Gain additional entries
             </label>
             <InfoTooltip
-              text={`Current rate: ${formatMoneyWithDecimals(currentPrice)} per entry. Rates follow a bonding curve—earlier entries require less mana.`}
+              text={`Current rate: ${formatMoneyWithDecimals(
+                currentPrice
+              )} per entry. Rates follow a bonding curve—earlier entries require less mana.`}
               size="sm"
             />
           </Row>
