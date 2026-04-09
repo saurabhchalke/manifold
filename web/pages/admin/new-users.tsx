@@ -7,7 +7,7 @@ import { useAdmin } from 'web/hooks/use-admin'
 import { useUser } from 'web/hooks/use-user'
 import { LoadingIndicator } from 'web/components/widgets/loading-indicator'
 import { Avatar } from 'web/components/widgets/avatar'
-import { UserLink } from 'web/components/widgets/user-link'
+import { RestrictedBadge, UserLink } from 'web/components/widgets/user-link'
 import { formatMoney } from 'common/util/format'
 import type { User } from 'common/user'
 import clsx from 'clsx'
@@ -123,6 +123,9 @@ function NewUsersTable() {
                       username: u.username,
                       name: u.name,
                     }}
+                  />
+                  <RestrictedBadge
+                    user={{ isBannedFromPosting: u.isBannedFromPosting }}
                   />
                 </Row>
               </td>

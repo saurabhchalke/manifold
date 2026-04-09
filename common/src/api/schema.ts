@@ -3632,6 +3632,7 @@ export const API = (_apiTypeCheck = {
         name: string
         avatarUrl: string
         balance: number
+        isBannedFromPosting: boolean
         referredByUserId: string | null
         referredByUsername: string | null
         referredByName: string | null
