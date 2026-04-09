@@ -40,6 +40,7 @@ import {
   checkSweepstakesGeofence,
   GeoLocationResult,
 } from 'common/sweepstakes-geofencing'
+import { getBestClientIp } from 'common/client-ip'
 import { canReceiveBonuses } from 'common/user'
 import { VerificationRequiredModal } from 'web/components/modals/verification-required-modal'
 
@@ -51,11 +52,9 @@ interface SweepstakesPageProps {
 export const getSweepstakesServerSideProps: GetServerSideProps<
   SweepstakesPageProps
 > = async (context) => {
-  // Extract IP from request headers
-  const forwarded = context.req.headers['x-forwarded-for']
-  const ip = Array.isArray(forwarded)
-    ? forwarded[0]
-    : forwarded?.split(',')[0]?.trim() ?? context.req.socket.remoteAddress ?? ''
+  const ip = getBestClientIp(context.req.headers, [
+    context.req.socket.remoteAddress,
+  ])
 
   const apiKey = process.env.IP_API_PRO_KEY
   if (!apiKey) {
