@@ -74,9 +74,7 @@ function NewUsersTable() {
 
   const handleIpBan = async (userId: string, ipAddress: string | null) => {
     if (!ipAddress) return
-    const confirmed = window.confirm(
-      `Block future signups from ${ipAddress}?`
-    )
+    const confirmed = window.confirm(`Block future signups from ${ipAddress}?`)
     if (!confirmed) return
 
     setIpBanningId(userId)
