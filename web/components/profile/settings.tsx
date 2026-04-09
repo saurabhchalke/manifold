@@ -49,9 +49,7 @@ export const AccountSettings = (props: {
 
   return (
     <Col className="gap-5">
-      {!canReceiveBonuses(user) && (
-        <IdentityVerificationSetting />
-      )}
+      {!canReceiveBonuses(user) && <IdentityVerificationSetting />}
       <div>
         <label className="mb-1 block">
           {capitalize(TRADE_TERM)} warnings{' '}
@@ -166,9 +164,7 @@ function IdentityVerificationSetting() {
       <div className="text-ink-600 mb-2 text-sm">
         Verify your identity to be eligible for bonuses and cash prize raffles.
       </div>
-      {error && (
-        <div className="text-scarlet-500 mb-2 text-sm">{error}</div>
-      )}
+      {error && <div className="text-scarlet-500 mb-2 text-sm">{error}</div>}
       <Button onClick={handleVerify} loading={loading} disabled={loading}>
         Verify Identity
       </Button>

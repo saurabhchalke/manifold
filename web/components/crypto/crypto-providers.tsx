@@ -75,7 +75,9 @@ export function CryptoProviders({ children }: { children: ReactNode }) {
   return (
     <CryptoReadyContext.Provider value={true}>
       <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </WagmiProvider>
     </CryptoReadyContext.Provider>
   )

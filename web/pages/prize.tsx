@@ -197,10 +197,17 @@ export default function SweepstakesPage({
 
   const numTickets = useMemo(() => {
     if (manaAmount <= 0) return 0
-    return calculateSweepstakesTicketsFromMana(totalTickets, manaAmount, totalPrizePool)
+    return calculateSweepstakesTicketsFromMana(
+      totalTickets,
+      manaAmount,
+      totalPrizePool
+    )
   }, [totalTickets, manaAmount, totalPrizePool])
 
-  const currentPrice = getCurrentSweepstakesTicketPrice(totalTickets, totalPrizePool)
+  const currentPrice = getCurrentSweepstakesTicketPrice(
+    totalTickets,
+    totalPrizePool
+  )
   const isClosed = sweepstakes && sweepstakes.closeTime <= Date.now()
   const hasWinners = !!(winners && winners.length > 0)
 

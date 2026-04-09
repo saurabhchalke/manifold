@@ -30,7 +30,7 @@ export default function Home() {
       {user && (
         <button
           type="button"
-          className="focus:ring-primary-500 fixed bottom-[64px] right-3 z-20 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-500 to-fuchsia-500 px-4 py-3 text-white shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 lg:hidden"
+          className="focus:ring-primary-500 from-primary-500 fixed bottom-[64px] right-3 z-20 inline-flex items-center gap-2 rounded-full bg-gradient-to-r to-fuchsia-500 px-4 py-3 text-white shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 lg:hidden"
           onClick={() => {
             Router.push('/checkout')
             track('mobile buy mana button')

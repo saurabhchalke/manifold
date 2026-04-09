@@ -157,7 +157,7 @@ const CashPrizes = ({
     onClick={() => onClick('How do I win cash prizes?')}
   >
     <div className="pb-2">
-      Manifold runs regular prize drawings where you can win real USDC. 
+      Manifold runs regular prize drawings where you can win real USDC.
     </div>
     <div className="pb-2">
       No purchase necessary—you can claim a free entry once per drawing. Winners

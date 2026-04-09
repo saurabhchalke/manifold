@@ -115,7 +115,8 @@ function CheckoutContent() {
               Payment Successful!
             </h2>
             <p className="text-ink-600 mb-6 text-sm">
-              Your mana is being credited to your account. This may take a few minutes.
+              Your mana is being credited to your account. This may take a few
+              minutes.
             </p>
             <Link href="/">
               <Button color="indigo" size="lg">
@@ -217,7 +218,6 @@ function CheckoutContent() {
                   </Row>
                 </button>
               )}
-
             </Col>
             {/* Legal disclaimer */}
             <div className="text-ink-600 rounded-lg bg-amber-50/50 p-4 text-sm dark:bg-amber-950/20">
