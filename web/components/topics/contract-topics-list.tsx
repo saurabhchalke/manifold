@@ -31,7 +31,7 @@ export function ContractTopicsList(props: {
 
       <Col className="gap-4">
         {topics.length === 0 ? (
-          <div className="text-ink-400 rounded-md border border-dashed border-ink-200 py-6 text-center text-sm">
+          <div className="text-ink-400 border-ink-200 rounded-md border border-dashed py-6 text-center text-sm">
             No topics yet. Add topics to help people find this market.
           </div>
         ) : (
@@ -45,7 +45,7 @@ export function ContractTopicsList(props: {
               >
                 {canEditTopic(t.id) && (
                   <button
-                    className="text-ink-400 hover:text-ink-700 ml-0.5 rounded-full p-0.5 transition-colors hover:bg-ink-200"
+                    className="text-ink-400 hover:text-ink-700 hover:bg-ink-200 ml-0.5 rounded-full p-0.5 transition-colors"
                     onClick={() => {
                       toast.promise(removeTopic(t), {
                         loading: `Removing "${t.name}"…`,
@@ -76,9 +76,7 @@ export function ContractTopicsList(props: {
                 })
               }
             />
-            {error && (
-              <span className="text-error text-sm">{error}</span>
-            )}
+            {error && <span className="text-error text-sm">{error}</span>}
           </Col>
         )}
       </Col>

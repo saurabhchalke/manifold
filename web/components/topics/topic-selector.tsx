@@ -190,7 +190,7 @@ export function TopicSelector(props: {
                 <ComboboxOption
                   value={'new'}
                   className={clsx(
-                    'relative flex cursor-pointer select-none items-center border-t border-ink-200 px-4 py-2.5 transition-colors',
+                    'border-ink-200 relative flex cursor-pointer select-none items-center border-t px-4 py-2.5 transition-colors',
                     'data-[focus]:bg-primary-50 data-[focus]:text-ink-1000 text-ink-700'
                   )}
                 >
