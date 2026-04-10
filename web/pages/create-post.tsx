@@ -1,25 +1,31 @@
+import { ShieldCheckIcon } from '@heroicons/react/solid'
 import { useState } from 'react'
-import { Spacer } from 'web/components/layout/spacer'
-import { Title } from 'web/components/widgets/title'
-import { TextEditor, useTextEditor } from 'web/components/widgets/editor'
-import Router from 'next/router'
+
+import { STARTING_BALANCE } from 'common/economy'
 import { Group } from 'common/group'
-import { ExpandingInput } from 'web/components/widgets/expanding-input'
-import { Button } from 'web/components/buttons/button'
-import { useUser } from 'web/hooks/use-user'
-import { linkClass } from 'web/components/widgets/site-link'
+import { Visibility } from 'common/contract'
+import { canReceiveBonuses } from 'common/user'
+import { formatMoney } from 'common/util/format'
+import { removeUndefinedProps } from 'common/util/object'
 import clsx from 'clsx'
 import Link from 'next/link'
-import { api, APIError } from 'web/lib/api/api'
-import { Page } from 'web/components/layout/page'
-import { DAY_MS } from 'common/util/time'
-import ShortToggle from 'web/components/widgets/short-toggle'
-import { Row } from 'web/components/layout/row'
-import { useAdmin } from 'web/hooks/use-admin'
+import Router from 'next/router'
+import { Button } from 'web/components/buttons/button'
 import { BackButton } from 'web/components/contract/back-button'
-import { Visibility } from 'common/contract'
+import { Col } from 'web/components/layout/col'
+import { Page } from 'web/components/layout/page'
+import { Row } from 'web/components/layout/row'
+import { Spacer } from 'web/components/layout/spacer'
+import { ExpandingInput } from 'web/components/widgets/expanding-input'
+import { TextEditor, useTextEditor } from 'web/components/widgets/editor'
 import { InfoTooltip } from 'web/components/widgets/info-tooltip'
-import { removeUndefinedProps } from 'common/util/object'
+import ShortToggle from 'web/components/widgets/short-toggle'
+import { linkClass } from 'web/components/widgets/site-link'
+import { Title } from 'web/components/widgets/title'
+import { useAdmin } from 'web/hooks/use-admin'
+import { useUser } from 'web/hooks/use-user'
+import { api, APIError } from 'web/lib/api/api'
+import { track } from 'web/lib/service/analytics'
 
 export async function getServerSideProps(context: any) {
   return {
@@ -69,7 +75,7 @@ export function CreatePostForm(props: {
 
   const user = useUser()
   const isAdmin = useAdmin()
-  const canCreate = user?.createdTime && Date.now() - user.createdTime > DAY_MS
+  const canCreate = user && canReceiveBonuses(user)
 
   async function savePost(title: string) {
     if (!editor) return
@@ -189,24 +195,51 @@ export function CreatePostForm(props: {
           </Button>
         </>
       ) : (
-        <div>
-          <p>
-            Due to high amounts of spam, posts can now only be created with
-            accounts more than 1 day old. (Or with the API.)
-          </p>
-          <br />
-          <p>
-            Did you mean to{' '}
-            <Link
-              href="/create"
-              className={clsx(linkClass, 'text-primary-700')}
-            >
-              create a market
-            </Link>{' '}
-            instead?
-          </p>
-        </div>
+        <VerifyToCreatePost />
       )}
     </div>
+  )
+}
+
+function VerifyToCreatePost() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleVerify = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      track('create post verification prompt: clicked')
+      const response = await api('create-idenfy-session', {})
+      window.location.href = response.redirectUrl
+    } catch (e) {
+      console.error('Failed to start verification:', e)
+      setError('Failed to start verification. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Col className="border-primary-300 bg-primary-50 items-center gap-3 rounded-lg border p-6">
+      <ShieldCheckIcon className="text-primary-500 h-12 w-12" />
+      <div className="text-ink-900 text-center text-lg font-semibold">
+        Verify your identity to create posts
+      </div>
+      <div className="text-ink-600 max-w-md text-center text-sm">
+        Complete a quick identity check (~2 min) to start posting. You'll also
+        receive{' '}
+        <span className="font-semibold">
+          {formatMoney(STARTING_BALANCE, 'MANA')}
+        </span>{' '}
+        as a bonus.
+      </div>
+      {error && (
+        <div className="text-scarlet-500 text-sm">{error}</div>
+      )}
+      <Button onClick={handleVerify} loading={loading}>
+        Verify now
+      </Button>
+    </Col>
   )
 }
