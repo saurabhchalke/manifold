@@ -1,9 +1,4 @@
-import {
-  ChevronDownIcon,
-  LockClosedIcon,
-  LockOpenIcon,
-  XIcon,
-} from '@heroicons/react/outline'
+import { LockClosedIcon, LockOpenIcon, XIcon } from '@heroicons/react/outline'
 import clsx from 'clsx'
 import { capitalize, uniq } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
@@ -53,9 +48,7 @@ import {
 import { floatingEqual } from 'common/util/math'
 import { removeUndefinedProps } from 'common/util/object'
 import { LuShare } from 'react-icons/lu'
-import { InfoTooltip } from 'web/components/widgets/info-tooltip'
 import { useFocus } from 'web/hooks/use-focus'
-import { useIsAdvancedTrader } from 'web/hooks/use-is-advanced-trader'
 import { useIsMobile } from 'web/hooks/use-is-mobile'
 import { useIsPageVisible } from 'web/hooks/use-page-visible'
 import { usePersistentLocalState } from 'web/hooks/use-persistent-local-state'
@@ -234,7 +227,6 @@ export const BuyPanelBody = (
     multiProps,
     outcome,
     setOutcome,
-    alwaysShowOutcomeSwitcher,
     onBuySuccess,
     location = 'bet panel',
     onClose,
@@ -395,11 +387,6 @@ export const BuyPanelBody = (
     }
   }, [updatedBet, submittedBet])
 
-  const [justSetAdvancedTrader, setJustSetAdvancedTrader] = useState<boolean>(
-    user?.isAdvancedTrader ?? false
-  )
-  const isAdvancedTrader = useIsAdvancedTrader() || justSetAdvancedTrader
-
   const [betTypeSetting, setBetTypeSetting] = useState<'Market' | 'Limit'>(
     'Market'
   )
@@ -420,12 +407,6 @@ export const BuyPanelBody = (
     setBetTypeSetting('Limit')
     toast('Expiration set to immediate', { icon: '⏱️' })
   })
-
-  useEffect(() => {
-    if (!isAdvancedTrader && betTypeSetting === 'Limit') {
-      setBetTypeSetting('Market')
-    }
-  }, [isAdvancedTrader])
 
   useEffect(() => {
     if (!isIOS() && !isAndroid()) {
@@ -725,77 +706,60 @@ export const BuyPanelBody = (
     <>
       <Col className={clsx(className, 'relative rounded-xl px-4 py-2')}>
         {children}
-        {(isAdvancedTrader || alwaysShowOutcomeSwitcher) && (
-          <Row className={'mb-2 mt-2 justify-between'}>
-            <Row
-              className={clsx(
-                ' gap-1',
-                // Hide toggle for binary MC questions or prop-provided pseudonyms (but NOT for PAMPU skin)
-                (isBinaryMC || propPseudonymName) && 'invisible'
-              )}
-            >
+        <Row className={'mb-2 mt-2 justify-between'}>
+          <Row
+            className={clsx(
+              ' gap-1',
+              // Hide toggle for binary MC questions or prop-provided pseudonyms (but NOT for PAMPU skin)
+              (isBinaryMC || propPseudonymName) && 'invisible'
+            )}
+          >
+            <ChoicesToggleGroup
+              currentChoice={outcome}
+              color={outcome === 'YES' ? 'light-green' : 'light-red'}
+              choicesMap={choicesMap}
+              setChoice={(outcome) => {
+                setOutcome(outcome as 'YES' | 'NO')
+                // Cancel dismiss timer if user is switching outcomes
+                cancelDismissTimerFn()
+              }}
+            />
+          </Row>
+          <Row className="items-center justify-end gap-2">
+            {!isStonk && (
               <ChoicesToggleGroup
-                currentChoice={outcome}
-                color={outcome === 'YES' ? 'light-green' : 'light-red'}
-                choicesMap={choicesMap}
-                setChoice={(outcome) => {
-                  setOutcome(outcome as 'YES' | 'NO')
-                  // Cancel dismiss timer if user is switching outcomes
-                  cancelDismissTimerFn()
+                currentChoice={betType}
+                color="gray"
+                choicesMap={{
+                  Quick: 'Market',
+                  Limit: 'Limit',
+                }}
+                setChoice={(val) => {
+                  setBetTypeSetting(val as 'Market' | 'Limit')
                 }}
               />
-            </Row>
-            <Row className="items-center justify-end gap-2">
-              {isAdvancedTrader && !isStonk && (
-                <ChoicesToggleGroup
-                  currentChoice={betType}
-                  color="gray"
-                  choicesMap={{
-                    Quick: 'Market',
-                    Limit: 'Limit',
-                  }}
-                  setChoice={(val) => {
-                    setBetTypeSetting(val as 'Market' | 'Limit')
-                  }}
-                />
-              )}
-              {onClose && (
-                <Button
-                  color="gray-white"
-                  size="sm"
-                  onClick={onClose}
-                  className="-mr-2"
-                >
-                  <XIcon className="h-5 w-5" />
-                </Button>
-              )}
-            </Row>
+            )}
+            {onClose && (
+              <Button
+                color="gray-white"
+                size="sm"
+                onClick={onClose}
+                className="-mr-2"
+              >
+                <XIcon className="h-5 w-5" />
+              </Button>
+            )}
           </Row>
-        )}
+        </Row>
         {betType === 'Market' ? (
           <>
             <Row
               className={clsx('text-ink-600 mb-2 items-center justify-between')}
             >
               <div className="space-x-3">{capitalize(TRADE_TERM)} amount</div>
-              {!isAdvancedTrader && onClose && (
-                <Button
-                  color="gray-white"
-                  size="sm"
-                  onClick={onClose}
-                  className="-mr-2"
-                >
-                  <XIcon className="h-5 w-5" />
-                </Button>
-              )}
             </Row>
 
-            <Row
-              className={clsx(
-                'mb-2 flex-wrap gap-x-8 gap-y-4',
-                isAdvancedTrader ? 'items-center' : 'items-end'
-              )}
-            >
+            <Row className={clsx('mb-2 flex-wrap items-center gap-x-8 gap-y-4')}>
               <BuyAmountInput
                 parentClassName="max-w-full"
                 amount={betAmount}
@@ -811,137 +775,127 @@ export const BuyPanelBody = (
                 quickButtonAmountSize={quickAddButtonSize}
               />
 
-              {isAdvancedTrader && (
-                <Col className="w-full gap-1">
-                  <Row className="w-full items-baseline justify-between sm:justify-start">
-                    <span className="text-ink-600 mr-2 min-w-[120px] whitespace-nowrap">
-                      {isPseudoNumeric
-                        ? 'Estimated value'
-                        : isStonk
-                        ? 'New stock price'
-                        : 'New probability'}
+              <Col className="w-full gap-1">
+                <Row className="w-full items-baseline justify-between sm:justify-start">
+                  <span className="text-ink-600 mr-2 min-w-[120px] whitespace-nowrap">
+                    {isPseudoNumeric
+                      ? 'Estimated value'
+                      : isStonk
+                      ? 'New stock price'
+                      : 'New probability'}
+                  </span>
+                  <Row className="items-baseline gap-1">
+                    <span className="text-lg font-semibold">
+                      {getFormattedMappedValue(
+                        contract,
+                        probStayedSame ? probBefore : probAfter
+                      )}
                     </span>
-                    <Row className="items-baseline gap-1">
-                      <span className="text-lg font-semibold">
-                        {getFormattedMappedValue(
-                          contract,
-                          probStayedSame ? probBefore : probAfter
-                        )}
-                      </span>
-                      {!probStayedSame && !isPseudoNumeric && (
-                        <>
-                          <span className={clsx('ml-1', 'text-ink-600')}>
-                            {outcome !== 'NO' || isBinaryMC ? '↑' : '↓'}
-                            {getFormattedMappedValue(
-                              contract,
-                              Math.abs(probAfter - probBefore)
-                            )}
-                            {floatingEqual(probAfter, maxProb)
-                              ? ' (max)'
-                              : floatingEqual(probAfter, minProb)
-                              ? ' (max)'
-                              : ''}
-                          </span>
+                    {!probStayedSame && !isPseudoNumeric && (
+                      <>
+                        <span className={clsx('ml-1', 'text-ink-600')}>
+                          {outcome !== 'NO' || isBinaryMC ? '↑' : '↓'}
+                          {getFormattedMappedValue(
+                            contract,
+                            Math.abs(probAfter - probBefore)
+                          )}
+                          {floatingEqual(probAfter, maxProb)
+                            ? ' (max)'
+                            : floatingEqual(probAfter, minProb)
+                            ? ' (max)'
+                            : ''}
+                        </span>
 
-                          <button
-                            onClick={() => {
-                              toast.success(
-                                `Slippage protection on ${
-                                  isCashContract ? 'cash' : 'mana'
-                                } questions ${
-                                  !slippageProtection ? 'enabled' : 'disabled'
-                                }!`
-                              )
-                              if (isCashContract) {
-                                setCashSlippageProtection(
-                                  !cashSlippageProtection
-                                )
-                              } else {
-                                setManaSlippageProtection(
-                                  !manaSlippageProtection
-                                )
-                              }
-                            }}
-                            className="self-center"
+                        <button
+                          onClick={() => {
+                            toast.success(
+                              `Slippage protection on ${
+                                isCashContract ? 'cash' : 'mana'
+                              } questions ${
+                                !slippageProtection ? 'enabled' : 'disabled'
+                              }!`
+                            )
+                            if (isCashContract) {
+                              setCashSlippageProtection(!cashSlippageProtection)
+                            } else {
+                              setManaSlippageProtection(!manaSlippageProtection)
+                            }
+                          }}
+                          className="self-center"
+                        >
+                          <Tooltip
+                            autoHideDuration={isMobile ? 3000 : undefined}
+                            text={
+                              slippageProtection
+                                ? `Your trades won't move the question probability more than 10 percentage points from displayed probability.`
+                                : `Slippage protection on ${
+                                    isCashContract ? 'cash' : 'mana'
+                                  } questions is off.`
+                            }
                           >
-                            <Tooltip
-                              autoHideDuration={isMobile ? 3000 : undefined}
-                              text={
-                                slippageProtection
-                                  ? `Your trades won't move the question probability more than 10 percentage points from displayed probability.`
-                                  : `Slippage protection on ${
-                                      isCashContract ? 'cash' : 'mana'
-                                    } questions is off.`
-                              }
+                            {slippageProtection ? (
+                              <LockClosedIcon className="h-4 w-4 text-indigo-300 hover:text-indigo-400" />
+                            ) : (
+                              <LockOpenIcon className="text-ink-500 hover:text-ink-600 h-4 w-4" />
+                            )}
+                          </Tooltip>
+                        </button>
+                      </>
+                    )}
+                  </Row>
+                </Row>
+                <Row className="min-w-[128px] items-baseline justify-between sm:justify-start">
+                  <div className="text-ink-600 mr-2 min-w-[120px] flex-nowrap whitespace-nowrap">
+                    {isPseudoNumeric || isStonk ? 'Shares' : <>To win</>}
+                  </div>
+                  <Row className="items-baseline">
+                    <span className="mr-1 whitespace-nowrap text-lg">
+                      {isStonk ? (
+                        getStonkDisplayShares(contract, currentPayout, 2)
+                      ) : isPseudoNumeric ? (
+                        Math.floor(currentPayout)
+                      ) : (
+                        <>
+                          {isEditingPayout ? (
+                            <AmountInput
+                              inputClassName="w-32"
+                              onBlur={handlePayoutEdited}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handlePayoutEdited()
+                                } else if (e.key === 'Escape') {
+                                  setIsEditingPayout(false)
+                                }
+                              }}
+                              autoFocus
+                              min={1}
+                              step={1}
+                              amount={editablePayout}
+                              onChangeAmount={setEditablePayout}
+                            />
+                          ) : (
+                            <span
+                              className={clsx('cursor-pointer hover:underline')}
+                              onClick={() => {
+                                setEditablePayout(Math.floor(currentPayout))
+                                setIsEditingPayout(true)
+                              }}
                             >
-                              {slippageProtection ? (
-                                <LockClosedIcon className="h-4 w-4 text-indigo-300 hover:text-indigo-400" />
-                              ) : (
-                                <LockOpenIcon className="text-ink-500 hover:text-ink-600 h-4 w-4" />
-                              )}
-                            </Tooltip>
-                          </button>
+                              {formatWithToken({
+                                amount: currentPayout,
+                                token: 'M$',
+                              })}
+                            </span>
+                          )}
                         </>
                       )}
-                    </Row>
+                    </span>
+                    <span className="text-green-500 ">
+                      {isStonk || isPseudoNumeric ? '' : ' +' + currentReturnPercent}
+                    </span>
                   </Row>
-                  <Row className="min-w-[128px] items-baseline justify-between sm:justify-start">
-                    <div className="text-ink-600 mr-2 min-w-[120px] flex-nowrap whitespace-nowrap">
-                      {isPseudoNumeric || isStonk ? 'Shares' : <>To win</>}
-                    </div>
-                    <Row className="items-baseline">
-                      <span className="mr-1 whitespace-nowrap text-lg">
-                        {isStonk ? (
-                          getStonkDisplayShares(contract, currentPayout, 2)
-                        ) : isPseudoNumeric ? (
-                          Math.floor(currentPayout)
-                        ) : (
-                          <>
-                            {isEditingPayout ? (
-                              <AmountInput
-                                inputClassName="w-32"
-                                onBlur={handlePayoutEdited}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handlePayoutEdited()
-                                  } else if (e.key === 'Escape') {
-                                    setIsEditingPayout(false)
-                                  }
-                                }}
-                                autoFocus
-                                min={1}
-                                step={1}
-                                amount={editablePayout}
-                                onChangeAmount={setEditablePayout}
-                              />
-                            ) : (
-                              <span
-                                className={clsx(
-                                  'cursor-pointer hover:underline'
-                                )}
-                                onClick={() => {
-                                  setEditablePayout(Math.floor(currentPayout))
-                                  setIsEditingPayout(true)
-                                }}
-                              >
-                                {formatWithToken({
-                                  amount: currentPayout,
-                                  token: 'M$',
-                                })}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </span>
-                      <span className="text-green-500 ">
-                        {isStonk || isPseudoNumeric
-                          ? ''
-                          : ' +' + currentReturnPercent}
-                      </span>
-                    </Row>
-                  </Row>
-                </Col>
-              )}
+                </Row>
+              </Col>
             </Row>
           </>
         ) : (
@@ -1109,10 +1063,7 @@ export const BuyPanelBody = (
           <Row className="mt-5 items-start justify-between text-sm">
             <Row className={''}>
               <span
-                className={clsx(
-                  'text-ink-600 mr-1 whitespace-nowrap ',
-                  isAdvancedTrader ? '' : 'min-w-[110px]'
-                )}
+                className={clsx('text-ink-600 mr-1 whitespace-nowrap ')}
               >
                 Your mana balance
               </span>
@@ -1126,82 +1077,6 @@ export const BuyPanelBody = (
           </Row>
         )}
 
-        {!isAdvancedTrader && (
-          <Col>
-            <Row className="">
-              <span className="text-ink-600 mr-1 min-w-[110px] whitespace-nowrap text-sm">
-                {isPseudoNumeric
-                  ? 'Estimated value'
-                  : isStonk
-                  ? 'New stock price'
-                  : 'New probability'}
-              </span>
-
-              <span className="text-ink-600 text-sm font-semibold">
-                {getFormattedMappedValue(
-                  contract,
-                  probStayedSame ? probBefore : probAfter
-                )}
-              </span>
-              {!probStayedSame && !isPseudoNumeric && (
-                <span className={clsx('ml-2 text-sm', 'text-ink-600')}>
-                  {outcome !== 'NO' || isBinaryMC ? '↑' : '↓'}
-                  {getFormattedMappedValue(
-                    contract,
-                    Math.abs(probAfter - probBefore)
-                  )}
-                  {floatingEqual(probAfter, maxProb)
-                    ? ' (max)'
-                    : floatingEqual(probAfter, minProb)
-                    ? ' (max)'
-                    : ''}{' '}
-                </span>
-              )}
-
-              {!isPseudoNumeric && !isStonk && !isBinaryMC && (
-                <InfoTooltip
-                  text={`Your ${TRADE_TERM} will move the probability of Yes from ${getFormattedMappedValue(
-                    contract,
-                    probBefore
-                  )} to ${getFormattedMappedValue(contract, probAfter)}.`}
-                  className="text-ink-600 ml-1 mt-0.5"
-                  size="sm"
-                />
-              )}
-
-              {isBinaryMC && (
-                <InfoTooltip
-                  text={`Your ${TRADE_TERM} will move the probability from ${getFormattedMappedValue(
-                    contract,
-                    probBefore
-                  )} to ${getFormattedMappedValue(contract, probAfter)}.`}
-                  className="text-ink-600 ml-1 mt-0.5"
-                  size="sm"
-                />
-              )}
-            </Row>
-          </Col>
-        )}
-
-        {user && (
-          <div className="absolute bottom-2 right-0">
-            <button
-              className="text-ink-600 mr-2 flex items-center text-sm hover:underline"
-              onClick={() => {
-                if (!isAdvancedTrader) {
-                  setBetTypeSetting('Market')
-                }
-                api('me/update', { isAdvancedTrader: !isAdvancedTrader })
-                setJustSetAdvancedTrader(!isAdvancedTrader)
-              }}
-            >
-              <span className="hover:underline">
-                {isAdvancedTrader ? 'Basic' : 'Advanced'}
-              </span>
-              <ChevronDownIcon className="ml-1 h-3 w-3" />
-            </button>
-          </div>
-        )}
       </Col>
 
       {contract.mechanism === 'cpmm-multi-1' && (
@@ -1211,17 +1086,15 @@ export const BuyPanelBody = (
           bets={unfilledBetsMatchingAnswer}
         />
       )}
-      {isAdvancedTrader && (
-        <OrderBookPanel
-          contract={contract}
-          limitBets={unfilledBets.filter(
-            (b) => b.answerId === multiProps?.answerToBuy?.id
-          )}
-          answer={multiProps?.answerToBuy}
-          pseudonym={props.pseudonym}
-          onOrderClick={handleOrderClick}
-        />
-      )}
+      <OrderBookPanel
+        contract={contract}
+        limitBets={unfilledBets.filter(
+          (b) => b.answerId === multiProps?.answerToBuy?.id
+        )}
+        answer={multiProps?.answerToBuy}
+        pseudonym={props.pseudonym}
+        onOrderClick={handleOrderClick}
+      />
     </>
   )
 }
