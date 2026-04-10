@@ -28,6 +28,7 @@ import { PRE_KYC_STARTING_BALANCE } from 'common/economy'
 import { convertPrivateUser, convertUser } from 'common/supabase/users'
 import { onCreateUser } from 'shared/helpers/on-create-user'
 import { insert } from 'shared/supabase/utils'
+import { runTxnFromBank } from 'shared/txn/run-txn'
 
 export const createUserMain = async (
   props: ValidatedAPIParams<'createuser'>,
@@ -134,12 +135,20 @@ export const createUserMain = async (
       id: userId,
       name: name,
       username: username,
-      balance: PRE_KYC_STARTING_BALANCE,
-      total_deposits: PRE_KYC_STARTING_BALANCE,
       data: userData,
     })
 
-    // Note: Signup bonus is now paid after identity verification (iDenfy)
+    await runTxnFromBank(tx, {
+      fromType: 'BANK',
+      toId: userId,
+      toType: 'USER',
+      amount: PRE_KYC_STARTING_BALANCE,
+      token: 'M$',
+      category: 'PRE_KYC_BONUS',
+      description: 'Pre-KYC starting balance',
+    })
+
+    // Note: Full signup bonus is paid after identity verification (iDenfy)
     // See backend/api/src/idenfy/callback.ts
 
     const privateUserRow = await insert(tx, 'private_users', {

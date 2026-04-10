@@ -72,6 +72,7 @@ type AnyTxnType =
   | ShopPurchase
   | ShopRefund
   | MembershipPayment
+  | PreKycBonus
 
 export type AnyTxnCategory = AnyTxnType['category']
 
@@ -289,6 +290,13 @@ type SignupBonus = {
   fromType: 'BANK'
   toType: 'USER'
   category: 'SIGNUP_BONUS'
+}
+
+type PreKycBonus = {
+  fromType: 'BANK'
+  toType: 'USER'
+  category: 'PRE_KYC_BONUS'
+  token: 'M$'
 }
 
 type ContractOldResolutionPayout = {
@@ -781,3 +789,4 @@ export type CharityGiveawayTicketTxn = Txn & CharityGiveawayTicket
 export type SweepstakesTicketTxn = Txn & SweepstakesTicket
 export type ShopPurchaseTxn = Txn & ShopPurchase
 export type MembershipPaymentTxn = Txn & MembershipPayment
+export type PreKycBonusTxn = Txn & PreKycBonus
