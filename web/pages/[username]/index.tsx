@@ -415,9 +415,7 @@ function UserProfile(props: {
                 title: 'Summary',
                 prerender: true,
                 stackedTabIcon: <PresentationChartLineIcon className="h-5" />,
-                content: (
-                  <PortfolioSummary className="mt-4" user={user} />
-                ),
+                content: <PortfolioSummary className="mt-4" user={user} />,
               },
               !!user.lastBetTime && {
                 title: 'Trades',

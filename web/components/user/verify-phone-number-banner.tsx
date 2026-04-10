@@ -27,7 +27,11 @@ export const VerifyPhoneNumberBanner = (props: {
     'verify-banner-dismissed-at'
   )
 
-  if (!user || canReceiveBonuses(user) || user.bonusEligibility === 'ineligible')
+  if (
+    !user ||
+    canReceiveBonuses(user) ||
+    user.bonusEligibility === 'ineligible'
+  )
     return null
 
   const hoursSinceDismiss = (Date.now() - dismissedAt) / (1000 * 60 * 60)
@@ -68,16 +72,13 @@ export const VerifyPhoneNumberBanner = (props: {
         <ShieldCheckIcon className="text-primary-600 hidden h-10 w-10 shrink-0 sm:block" />
         <Col className="flex-1 gap-1">
           <div className="text-ink-900 text-lg font-semibold">
-            Verify your identity to get{' '}
-            {formatMoney(STARTING_BALANCE, 'MANA')}
+            Verify your identity to get {formatMoney(STARTING_BALANCE, 'MANA')}
           </div>
           <div className="text-ink-600 text-sm">
             Complete a quick identity check (~2 min) to unlock your full
             starting bonus.
           </div>
-          {error && (
-            <div className="text-scarlet-500 text-sm">{error}</div>
-          )}
+          {error && <div className="text-scarlet-500 text-sm">{error}</div>}
         </Col>
         <Button onClick={handleVerify} loading={loading} className="shrink-0">
           Verify now
