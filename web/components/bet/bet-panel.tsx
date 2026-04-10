@@ -759,7 +759,9 @@ export const BuyPanelBody = (
               <div className="space-x-3">{capitalize(TRADE_TERM)} amount</div>
             </Row>
 
-            <Row className={clsx('mb-2 flex-wrap items-center gap-x-8 gap-y-4')}>
+            <Row
+              className={clsx('mb-2 flex-wrap items-center gap-x-8 gap-y-4')}
+            >
               <BuyAmountInput
                 parentClassName="max-w-full"
                 amount={betAmount}
@@ -891,7 +893,9 @@ export const BuyPanelBody = (
                       )}
                     </span>
                     <span className="text-green-500 ">
-                      {isStonk || isPseudoNumeric ? '' : ' +' + currentReturnPercent}
+                      {isStonk || isPseudoNumeric
+                        ? ''
+                        : ' +' + currentReturnPercent}
                     </span>
                   </Row>
                 </Row>
@@ -1062,9 +1066,7 @@ export const BuyPanelBody = (
         {user && (
           <Row className="mt-5 items-start justify-between text-sm">
             <Row className={''}>
-              <span
-                className={clsx('text-ink-600 mr-1 whitespace-nowrap ')}
-              >
+              <span className={clsx('text-ink-600 mr-1 whitespace-nowrap ')}>
                 Your mana balance
               </span>
               <span className="text-ink-600 font-semibold">
@@ -1076,7 +1078,6 @@ export const BuyPanelBody = (
             </Row>
           </Row>
         )}
-
       </Col>
 
       {contract.mechanism === 'cpmm-multi-1' && (
