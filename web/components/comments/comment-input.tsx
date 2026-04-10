@@ -108,7 +108,11 @@ export function CommentInput(props: {
 
   if (user?.isBannedFromPosting) return <></>
 
-  if (user && !canReceiveBonuses(user) && user.bonusEligibility !== 'ineligible')
+  if (
+    user &&
+    !canReceiveBonuses(user) &&
+    user.bonusEligibility !== 'ineligible'
+  )
     return <VerifyToCommentPrompt className={className} />
 
   return blocked ? (
@@ -310,9 +314,7 @@ function VerifyToCommentPrompt(props: { className?: string }) {
           Verify now
         </Button>
       </Row>
-      {error && (
-        <div className="text-scarlet-500 mt-1 text-xs">{error}</div>
-      )}
+      {error && <div className="text-scarlet-500 mt-1 text-xs">{error}</div>}
     </Col>
   )
 }

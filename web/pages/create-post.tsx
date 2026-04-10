@@ -234,9 +234,7 @@ function VerifyToCreatePost() {
         </span>{' '}
         as a bonus.
       </div>
-      {error && (
-        <div className="text-scarlet-500 text-sm">{error}</div>
-      )}
+      {error && <div className="text-scarlet-500 text-sm">{error}</div>}
       <Button onClick={handleVerify} loading={loading}>
         Verify now
       </Button>
