@@ -187,12 +187,9 @@ export const BOT_USERNAMES = [
   'cot',
   'timestwo',
   'XBot',
-<<<<<<< patch-2
   'Gluten',
-  'Rice'
-=======
-  'pythia'
->>>>>>> main
+  'Rice',
+  'pythia',
 ]
 
 export const MOD_IDS = [
