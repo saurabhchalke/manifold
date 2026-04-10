@@ -396,6 +396,12 @@ function UserProfile(props: {
           />
         )}
 
+        {isCurrentUser && (
+          <Col className="mx-4 mt-2">
+            <VerifyPhoneNumberBanner user={currentUser} />
+          </Col>
+        )}
+
         <Col className="mx-4">
           <QueryUncontrolledTabs
             trackingName={'profile tabs'}
@@ -410,12 +416,7 @@ function UserProfile(props: {
                 prerender: true,
                 stackedTabIcon: <PresentationChartLineIcon className="h-5" />,
                 content: (
-                  <>
-                    <Col className="mt-2 gap-2">
-                      <VerifyPhoneNumberBanner user={currentUser} />
-                    </Col>
-                    <PortfolioSummary className="mt-4" user={user} />
-                  </>
+                  <PortfolioSummary className="mt-4" user={user} />
                 ),
               },
               !!user.lastBetTime && {
