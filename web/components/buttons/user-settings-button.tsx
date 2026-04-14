@@ -152,9 +152,7 @@ export function UserSettingButton(props: { user: User }) {
                           isBot: !user.isBot,
                         })
                         toast.success(
-                          user.isBot
-                            ? 'Bot status removed'
-                            : 'Marked as bot'
+                          user.isBot ? 'Bot status removed' : 'Marked as bot'
                         )
                         router.reload()
                       } catch (e: any) {
