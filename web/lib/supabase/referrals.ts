@@ -4,18 +4,18 @@ import { type DisplayUser } from 'common/api/user-types'
 
 export async function getReferrals(userId: string) {
   const { data } = await run(
-    db
+    (db
       .from('users')
       .select(
         `id, name, username, is_bot, data->avatarUrl, data->isBannedFromPosting`
-      )
+      ) as any)
       .contains('data', {
         referredByUserId: userId,
       })
   )
 
-  return (data ?? []).map((user) => ({
+  return (data ?? []).map((user: any) => ({
     ...user,
-    isBot: (user as any).is_bot ?? undefined,
-  })) as unknown as DisplayUser[]
+    isBot: user.is_bot ?? undefined,
+  })) as DisplayUser[]
 }
