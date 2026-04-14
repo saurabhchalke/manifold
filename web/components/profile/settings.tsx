@@ -216,18 +216,22 @@ function MarkSelfAsBotButton(props: { user: User }) {
         Mark my account as a bot
       </Button>
       <Modal open={showModal} setOpen={setShowModal} size="md">
-        <Col className="bg-canvas-0 rounded-xl p-6 gap-4">
+        <Col className="bg-canvas-0 gap-4 rounded-xl p-6">
           <Title className="!mb-0">Mark account as bot</Title>
-          <div className="text-ink-700 text-sm leading-relaxed space-y-3">
+          <div className="text-ink-700 space-y-3 text-sm leading-relaxed">
             <p>
               This will <b>permanently</b> mark your account as a bot. This
               action <b>cannot be undone</b> without contacting a moderator.
             </p>
             <p className="font-semibold">Bot accounts:</p>
-            <ul className="list-disc pl-5 space-y-1">
+            <ul className="list-disc space-y-1 pl-5">
               <li>Display a "Bot" badge next to your name</li>
-              <li>Are excluded from leagues and placed in the Silicon division</li>
-              <li>Do not count toward unique bettor bonuses for market creators</li>
+              <li>
+                Are excluded from leagues and placed in the Silicon division
+              </li>
+              <li>
+                Do not count toward unique bettor bonuses for market creators
+              </li>
               <li>Are excluded from importance score calculations</li>
               <li>Cannot earn bettor bonuses for other users</li>
             </ul>
