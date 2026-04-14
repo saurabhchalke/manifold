@@ -53,12 +53,13 @@ export async function getDisplayUsers(userIds: string[]) {
   // Fetch users and entitlements in parallel
   const [usersResult, entitlementsResult] = await Promise.all([
     run(
-      (db
-        .from('users')
-        .select(
-          `id, name, username, is_bot, data->avatarUrl, data->isBannedFromPosting`
-        ) as any)
-        .in('id', userIds)
+      (
+        db
+          .from('users')
+          .select(
+            `id, name, username, is_bot, data->avatarUrl, data->isBannedFromPosting`
+          ) as any
+      ).in('id', userIds)
     ),
     run(
       db
