@@ -41,7 +41,9 @@ export default function AdminTicketsPage() {
     setCopying(true)
     try {
       await navigator.clipboard.writeText(emails)
-      toast.success(`Copied ${orders.length} email${orders.length === 1 ? '' : 's'}`)
+      toast.success(
+        `Copied ${orders.length} email${orders.length === 1 ? '' : 's'}`
+      )
     } catch {
       toast.error('Copy failed')
     } finally {
@@ -74,7 +76,11 @@ export default function AdminTicketsPage() {
         )}
 
         <Row className="gap-2">
-          <Button color="indigo" onClick={copyEmails} disabled={copying || orders.length === 0}>
+          <Button
+            color="indigo"
+            onClick={copyEmails}
+            disabled={copying || orders.length === 0}
+          >
             Copy all emails
           </Button>
         </Row>

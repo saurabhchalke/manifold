@@ -729,7 +729,6 @@ export default function ShopPage() {
             </>
           )}
 
-
         {/* Charity giveaway and champion cards */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <CharityGiveawayCard
@@ -842,10 +841,10 @@ function TicketItemCard(props: {
     return () => clearTimeout(t)
   }, [purchaseResult, doneCountdown])
 
-  const {
-    data: stockData,
-    refresh: refreshStock,
-  } = useAPIGetter('get-ticket-stock', { itemId: item.id })
+  const { data: stockData, refresh: refreshStock } = useAPIGetter(
+    'get-ticket-stock',
+    { itemId: item.id }
+  )
 
   const { data: purchasedData, refresh: refreshPurchased } = useAPIGetter(
     'get-user-ticket-purchased',
@@ -883,9 +882,7 @@ function TicketItemCard(props: {
       })
       toast.success('Ticket purchased!')
     } catch (e: unknown) {
-      toast.error(
-        e instanceof Error ? e.message : 'Failed to purchase ticket'
-      )
+      toast.error(e instanceof Error ? e.message : 'Failed to purchase ticket')
     } finally {
       setPurchasing(false)
       refreshStock()
@@ -909,9 +906,7 @@ function TicketItemCard(props: {
       <div
         className={clsx(
           'bg-canvas-0 text-ink-900 relative overflow-hidden rounded-xl border-2 shadow-sm',
-          comingSoon
-            ? 'border-ink-300 opacity-80'
-            : 'border-amber-400'
+          comingSoon ? 'border-ink-300 opacity-80' : 'border-amber-400'
         )}
       >
         {/* Top banner */}
@@ -935,9 +930,7 @@ function TicketItemCard(props: {
         <Col
           className={clsx(
             'items-center justify-center gap-1 px-4 py-6 text-center',
-            comingSoon
-              ? 'bg-canvas-50'
-              : 'bg-amber-200/50 dark:bg-amber-500/10'
+            comingSoon ? 'bg-canvas-50' : 'bg-amber-200/50 dark:bg-amber-500/10'
           )}
         >
           <div
@@ -1123,9 +1116,7 @@ function TicketItemCard(props: {
                     Apply it at checkout on the Manifest ticket page for 100%
                     off.
                   </li>
-                  <li>
-                    Save this code now — it will not be shown again.
-                  </li>
+                  <li>Save this code now — it will not be shown again.</li>
                 </ul>
               </div>
               <div className="text-ink-500 text-sm">
@@ -1150,16 +1141,13 @@ function TicketItemCard(props: {
               </div>
               <Col className="gap-1">
                 <div className="text-sm font-medium">Your email</div>
-                <div className="bg-canvas-50 border-ink-200 rounded border px-3 py-2 text-sm font-mono">
+                <div className="bg-canvas-50 border-ink-200 rounded border px-3 py-2 font-mono text-sm">
                   {userEmail ?? '—'}
                 </div>
                 <div className="text-ink-500 text-xs">
-                  The email on your manifest.is ticket must match this email,
-                  or it may be invalidated. Contact{' '}
-                  <a
-                    href="mailto:info@manifold.markets"
-                    className="underline"
-                  >
+                  The email on your manifest.is ticket must match this email, or
+                  it may be invalidated. Contact{' '}
+                  <a href="mailto:info@manifold.markets" className="underline">
                     info@manifold.markets
                   </a>{' '}
                   if this is an issue.
