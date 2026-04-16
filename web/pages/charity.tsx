@@ -115,6 +115,7 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
   const winningCharity = data ? data.winningCharity : undefined
   const winner = data ? data.winner : undefined
   const blockHash = data ? data.nonce : undefined // nonce now contains Bitcoin block hash
+  const yourEntry = data?.yourEntry
   const totalManaSpent = charityStats.reduce(
     (sum, s) => sum + s.totalManaSpent,
     0
@@ -463,6 +464,7 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
             hoveredCharityId={hoveredCharityId}
             onHoverCharity={setHoveredCharityId}
             onSelectCharity={setSelectedCharityId}
+            myEntries={yourEntry?.totalTickets}
           />
         )}
 
@@ -844,6 +846,7 @@ function GiveawayPieChart(props: {
   hoveredCharityId: string | null
   onHoverCharity: (charityId: string | null) => void
   onSelectCharity: (charityId: string) => void
+  myEntries?: number
 }) {
   const {
     charityStats,
@@ -851,6 +854,7 @@ function GiveawayPieChart(props: {
     hoveredCharityId,
     onHoverCharity,
     onSelectCharity,
+    myEntries,
   } = props
 
   if (charityStats.length === 0) {
@@ -926,8 +930,17 @@ function GiveawayPieChart(props: {
   return (
     <div className="bg-canvas-0 border-canvas-50 overflow-hidden rounded-xl border shadow-sm">
       <div className="border-canvas-50 border-b px-5 py-4">
-        <h3 className="text-ink-900 font-semibold">Entry Distribution</h3>
-        <p className="text-ink-500 mt-0.5 text-sm">Breakdown by charity</p>
+        <Row className="items-start justify-between">
+          <div>
+            <h3 className="text-ink-900 font-semibold">Entry Distribution</h3>
+            <p className="text-ink-500 mt-0.5 text-sm">Breakdown by charity</p>
+          </div>
+          {myEntries != null && myEntries > 0 && (
+            <div className="bg-primary-50 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
+              You: {formatEntries(myEntries)} {myEntries === 1 ? 'entry' : 'entries'}
+            </div>
+          )}
+        </Row>
       </div>
 
       <div className="p-5">

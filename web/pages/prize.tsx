@@ -533,6 +533,11 @@ export default function SweepstakesPage({
             totalTickets={totalTickets}
             hoveredUserId={hoveredUserId}
             onHoverUser={setHoveredUserId}
+            myEntries={
+              user
+                ? userStats.find((s) => s.userId === user.id)?.totalTickets
+                : undefined
+            }
           />
         )}
 
@@ -1088,8 +1093,10 @@ function UserDistributionChart(props: {
   totalTickets: number
   hoveredUserId: string | null
   onHoverUser: (userId: string | null) => void
+  myEntries?: number
 }) {
-  const { userStats, totalTickets, hoveredUserId, onHoverUser } = props
+  const { userStats, totalTickets, hoveredUserId, onHoverUser, myEntries } =
+    props
 
   if (userStats.length === 0) {
     return (
@@ -1116,8 +1123,17 @@ function UserDistributionChart(props: {
   return (
     <div className="bg-canvas-0 border-canvas-50 overflow-hidden rounded-xl border shadow-sm">
       <div className="border-canvas-50 border-b px-5 py-4">
-        <h3 className="text-ink-900 font-semibold">Entry Distribution</h3>
-        <p className="text-ink-500 mt-0.5 text-sm">Top participants</p>
+        <Row className="items-start justify-between">
+          <div>
+            <h3 className="text-ink-900 font-semibold">Entry Distribution</h3>
+            <p className="text-ink-500 mt-0.5 text-sm">Top participants</p>
+          </div>
+          {myEntries != null && myEntries > 0 && (
+            <div className="bg-primary-50 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
+              You: {formatEntries(myEntries)} {myEntries === 1 ? 'entry' : 'entries'}
+            </div>
+          )}
+        </Row>
       </div>
 
       <div className="p-5">
