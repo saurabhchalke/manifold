@@ -1501,6 +1501,16 @@ export const API = (_apiTypeCheck = {
       context: JSONContent | undefined
     },
   },
+  'set-bot-status': {
+    method: 'POST',
+    visibility: 'undocumented',
+    authed: true,
+    props: z.object({
+      userId: z.string(),
+      isBot: z.boolean(),
+    }),
+    returns: {} as { success: boolean },
+  },
   'ban-user': {
     method: 'POST',
     visibility: 'undocumented',
@@ -3734,6 +3744,57 @@ export const API = (_apiTypeCheck = {
     authed: true,
     props: z.object({}).strict(),
     returns: {} as { success: boolean; refundedAmount: number },
+  },
+  'shop-purchase-ticket': {
+    method: 'POST',
+    visibility: 'public',
+    authed: true,
+    props: z
+      .object({
+        itemId: z.string(),
+      })
+      .strict(),
+    returns: {} as {
+      success: boolean
+      orderId: string
+      discountCode: string | null
+      remainingStock: number
+    },
+  },
+  'get-ticket-stock': {
+    method: 'GET',
+    visibility: 'public',
+    authed: false,
+    cache: 'public, max-age=2, stale-while-revalidate=10',
+    props: z.object({ itemId: z.string() }).strict(),
+    returns: {} as { sold: number; maxStock: number; available: number },
+  },
+  'get-user-ticket-purchased': {
+    method: 'GET',
+    visibility: 'undocumented',
+    authed: true,
+    props: z.object({}).strict(),
+    returns: {} as { purchased: boolean },
+  },
+  'get-ticket-orders': {
+    method: 'GET',
+    visibility: 'undocumented',
+    authed: true,
+    props: z.object({ itemId: z.string().optional() }).strict(),
+    returns: {} as {
+      orders: Array<{
+        id: string
+        userId: string
+        username: string
+        displayName: string
+        email: string | null
+        itemId: string
+        priceMana: number
+        status: string
+        createdTime: number
+      }>
+      total: number
+    },
   },
   'shop-purchase-merch': {
     method: 'POST',

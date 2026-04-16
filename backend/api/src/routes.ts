@@ -54,6 +54,7 @@ import { addOrRemoveTopicFromContract } from './add-topic-to-market'
 import { addOrRemoveTopicFromTopic } from './add-topic-to-topic'
 import { awardBounty } from './award-bounty'
 import { banuser } from './ban-user'
+import { setbotstatus } from './set-bot-status'
 import { blockGroup, unblockGroup } from './block-group'
 import { blockMarket, unblockMarket } from './block-market'
 import { blockUser, unblockUser } from './block-user'
@@ -258,6 +259,10 @@ import { referUser } from './refer-user'
 import { shopCancelSubscription } from './shop-cancel-subscription'
 import { shopPurchase } from './shop-purchase'
 import { shopPurchaseMerch } from './shop-purchase-merch'
+import { shopPurchaseTicket } from './shop-purchase-ticket'
+import { getTicketStock } from './get-ticket-stock'
+import { getTicketOrders } from './get-ticket-orders'
+import { getUserTicketPurchased } from './get-user-ticket-purchased'
 import { shopResetAll } from './shop-reset-all'
 import { shopShippingRates } from './shop-shipping-rates'
 import { shopToggle } from './shop-toggle'
@@ -376,6 +381,7 @@ export const handlers: { [k in APIPath]: APIHandler<k> } = {
   'get-related-markets': getRelatedMarkets,
   'get-related-markets-by-group': getRelatedMarketsByGroup,
   'get-market-context': getMarketContext,
+  'set-bot-status': setbotstatus,
   'ban-user': banuser,
   'dismiss-mod-alert': dismissmodalert,
   'super-ban-user': superBanUser,
@@ -524,6 +530,10 @@ export const handlers: { [k in APIPath]: APIHandler<k> } = {
   'get-shop-stats': getShopStats,
   'shop-purchase': shopPurchase,
   'shop-purchase-merch': shopPurchaseMerch,
+  'shop-purchase-ticket': shopPurchaseTicket,
+  'get-ticket-stock': getTicketStock,
+  'get-ticket-orders': getTicketOrders,
+  'get-user-ticket-purchased': getUserTicketPurchased,
   'shop-shipping-rates': shopShippingRates,
   'shop-reset-all': shopResetAll,
   'shop-toggle': shopToggle,

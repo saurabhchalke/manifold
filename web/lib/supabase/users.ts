@@ -53,12 +53,13 @@ export async function getDisplayUsers(userIds: string[]) {
   // Fetch users and entitlements in parallel
   const [usersResult, entitlementsResult] = await Promise.all([
     run(
-      db
-        .from('users')
-        .select(
-          `id, name, username, data->avatarUrl, data->isBannedFromPosting`
-        )
-        .in('id', userIds)
+      (
+        db
+          .from('users')
+          .select(
+            `id, name, username, is_bot, data->avatarUrl, data->isBannedFromPosting`
+          ) as any
+      ).in('id', userIds)
     ),
     run(
       db
@@ -83,8 +84,9 @@ export async function getDisplayUsers(userIds: string[]) {
   }
 
   // Merge entitlements into users
-  return (users ?? []).map((user) => ({
+  return (users ?? []).map((user: any) => ({
     ...user,
+    isBot: user.is_bot ?? undefined,
     entitlements: (entitlementsByUser.get(user.id) ?? []).map(
       convertEntitlement
     ),
