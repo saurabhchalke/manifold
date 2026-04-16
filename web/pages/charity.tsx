@@ -937,7 +937,8 @@ function GiveawayPieChart(props: {
           </div>
           {myEntries != null && myEntries > 0 && (
             <div className="bg-primary-50 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
-              You: {formatEntries(myEntries)} {myEntries === 1 ? 'entry' : 'entries'}
+              You: {formatEntries(myEntries)}{' '}
+              {myEntries === 1 ? 'entry' : 'entries'}
             </div>
           )}
         </Row>
