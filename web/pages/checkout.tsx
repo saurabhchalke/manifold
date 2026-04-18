@@ -248,8 +248,8 @@ function CheckoutContent() {
                   </span>
                 </Row>
                 <p className="text-ink-600 mt-1 text-sm">
-                  As a first-time buyer, you'll receive a 10% bonus on
-                  your purchase — plus an additional 10% on orders of $
+                  As a first-time buyer, you'll receive a 10% bonus on your
+                  purchase — plus an additional 10% on orders of $
                   {CRYPTO_BULK_THRESHOLD_DISPLAY.toLocaleString()} or more!
                 </p>
               </div>
