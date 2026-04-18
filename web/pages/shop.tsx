@@ -997,8 +997,9 @@ function TicketItemCard(props: {
           </div>
 
           {/* Stock display */}
-          {!comingSoon && available !== null && (
-            isEarlyBird ? (
+          {!comingSoon &&
+            available !== null &&
+            (isEarlyBird ? (
               <Col className="gap-1">
                 <Row className="text-ink-600 justify-between text-[11px]">
                   <span>
@@ -1032,8 +1033,7 @@ function TicketItemCard(props: {
                   ? 'Less than 5 remaining — limited stock'
                   : 'More than 5 remaining — limited stock'}
               </div>
-            )
-          )}
+            ))}
 
           {/* Price + CTA */}
           <Col className="mt-auto gap-2">
