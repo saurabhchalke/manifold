@@ -141,6 +141,18 @@ export function getPrizeForRank(
   return undefined
 }
 
+// Get ordinal suffix for a rank (1 -> "st", 2 -> "nd", etc.)
+export function getOrdinalSuffix(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return s[(v - 20) % 10] || s[v] || s[0]
+}
+
+// Format a rank as an ordinal label (1 -> "1st", 2 -> "2nd", etc.)
+export function getRankLabel(rank: number): string {
+  return `${rank}${getOrdinalSuffix(rank)}`
+}
+
 // Calculate total prize pool
 export function getTotalPrizePool(prizes: SweepstakesPrize[]): number {
   let total = 0

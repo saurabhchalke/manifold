@@ -33,6 +33,7 @@ import {
 import {
   calculateSweepstakesTicketsFromMana,
   getCurrentSweepstakesTicketPrice,
+  getRankLabel,
   getTotalPrizePool,
   SweepstakesPrize,
 } from 'common/sweepstakes'
@@ -1320,7 +1321,7 @@ function WinnersDisplay(props: {
               className="items-center gap-4 rounded-xl border border-amber-200 bg-white/80 p-4 dark:border-amber-700 dark:bg-gray-900/50"
             >
               <div className="text-ink-900 w-16 text-center text-lg font-bold">
-                {winner.label}
+                {getRankLabel(winner.rank)}
               </div>
               <Avatar
                 username={winner.user.username}
