@@ -64,6 +64,11 @@ module.exports = {
   async redirects() {
     return [
       {
+        source: '/supporter',
+        destination: '/membership',
+        permanent: true,
+      },
+      {
         source: '/politics',
         destination: '/election',
         permanent: true,

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import clsx from 'clsx'
 import { FaStar } from 'react-icons/fa'
 import { DAY_MS } from 'common/util/time'
@@ -54,6 +55,20 @@ export default function SupporterPage() {
   const [cancelling, setCancelling] = useState(false)
   const [hoveredTier, setHoveredTier] = useState<SupporterTier | null>(null)
   const [selectedTier, setSelectedTier] = useState<SupporterTier>('plus')
+
+  // Honor ?tier= query param (e.g. when navigating from the shop card)
+  const router = useRouter()
+  useEffect(() => {
+    const queryTier = router.query.tier
+    if (
+      typeof queryTier === 'string' &&
+      (queryTier === 'basic' ||
+        queryTier === 'plus' ||
+        queryTier === 'premium')
+    ) {
+      setSelectedTier(queryTier)
+    }
+  }, [router.query.tier])
 
   // Get current supporter status and portfolio
   const portfolio = useCurrentPortfolio(user?.id)
@@ -120,7 +135,7 @@ export default function SupporterPage() {
       <SEO
         title="Manifold Membership"
         description="Unlock premium benefits with Manifold Plus, Pro, or Premium"
-        url="/supporter"
+        url="/membership"
       />
 
       {showCelebration && (

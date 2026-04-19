@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { FaHeart, FaGift, FaTrophy } from 'react-icons/fa6'
+import { FaHeart, FaGift } from 'react-icons/fa6'
 import { User } from 'common/user'
 import { useAPIGetter } from 'web/hooks/use-api-getter'
 import { Col } from '../layout/col'
@@ -94,8 +94,6 @@ export function CharityGiveawayCard(props: {
   const winningCharity = data?.winningCharity
   const winner = data?.winner
   const champion = data?.champion
-  const topUsers = data?.topUsers
-  const yourEntry = data?.yourEntry
 
   // Time remaining countdown
   const [timeRemaining, setTimeRemaining] = useState<string>('')
@@ -210,15 +208,6 @@ export function CharityGiveawayCard(props: {
               </Col>
             </Row>
 
-            {/* Mini leaderboard */}
-            {topUsers && topUsers.length > 0 && (
-              <MiniLeaderboard
-                topUsers={topUsers}
-                yourEntry={yourEntry}
-                user={user}
-              />
-            )}
-
             {/* CTA */}
             <Button
               color="green"
@@ -270,15 +259,6 @@ export function CharityGiveawayCard(props: {
                 <div className="text-ink-500 text-[10px]">Entries</div>
               </Col>
             </Row>
-
-            {/* Mini leaderboard */}
-            {topUsers && topUsers.length > 0 && (
-              <MiniLeaderboard
-                topUsers={topUsers}
-                yourEntry={yourEntry}
-                user={user}
-              />
-            )}
 
             <p className="text-ink-500 mb-3 text-xs">
               Giveaway has ended. Winner will be drawn soon!
@@ -338,15 +318,6 @@ export function CharityGiveawayCard(props: {
             )}
           </Col>
 
-          {/* Mini leaderboard */}
-          {topUsers && topUsers.length > 0 && (
-            <MiniLeaderboard
-              topUsers={topUsers}
-              yourEntry={yourEntry}
-              user={user}
-            />
-          )}
-
           {/* CTA */}
           <Button
             color="amber"
@@ -361,84 +332,3 @@ export function CharityGiveawayCard(props: {
   )
 }
 
-function MiniLeaderboard(props: {
-  topUsers: NonNullable<CharityGiveawayData['topUsers']>
-  yourEntry?: CharityGiveawayData['yourEntry']
-  user?: User | null
-}) {
-  const { topUsers, yourEntry, user } = props
-
-  // Always show top 3, then show the user's row below if they're not already visible
-  const visibleUsers = topUsers.slice(0, 3)
-  const userAlreadyShown = user && visibleUsers.some((u) => u.id === user.id)
-  const showYourRow = user && yourEntry && !userAlreadyShown
-
-  return (
-    <Col className="mb-3 gap-0.5 rounded-lg bg-amber-50/80 px-3 py-2 dark:bg-amber-900/20">
-      {visibleUsers.map((u) => {
-        const isYou = user && u.id === user.id
-        return (
-          <LeaderboardRow
-            key={u.id}
-            rank={u.rank}
-            name={isYou ? 'You' : u.name}
-            tickets={u.totalTickets}
-            isLeader={u.rank === 1}
-            isYou={!!isYou}
-          />
-        )
-      })}
-      {showYourRow && (
-        <>
-          <div className="text-ink-400 px-1 text-xs leading-tight">···</div>
-          <LeaderboardRow
-            rank={yourEntry.rank}
-            name="You"
-            tickets={yourEntry.totalTickets}
-            isLeader={false}
-            isYou
-          />
-        </>
-      )}
-    </Col>
-  )
-}
-
-function LeaderboardRow(props: {
-  rank: number
-  name: string
-  tickets: number
-  isLeader: boolean
-  isYou: boolean
-}) {
-  const { rank, name, tickets, isLeader, isYou } = props
-  return (
-    <Row className="items-center gap-1.5 text-sm">
-      {isLeader ? (
-        <FaTrophy
-          className="h-3 w-3 shrink-0 text-amber-500"
-          style={{ filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.4))' }}
-        />
-      ) : (
-        <span className="text-ink-400 w-3 shrink-0 text-center text-xs">
-          {rank}
-        </span>
-      )}
-      <span
-        className={clsx(
-          'min-w-0 truncate',
-          isYou
-            ? 'font-bold text-teal-700 dark:text-teal-400'
-            : isLeader
-            ? 'font-semibold text-amber-700 dark:text-amber-400'
-            : 'text-ink-600'
-        )}
-      >
-        {name}
-      </span>
-      <span className="text-ink-400 ml-auto shrink-0 text-xs">
-        {Math.floor(tickets).toLocaleString()}
-      </span>
-    </Row>
-  )
-}

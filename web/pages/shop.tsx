@@ -38,6 +38,7 @@ import {
 } from 'common/supporter-config'
 import clsx from 'clsx'
 import Link from 'next/link'
+import Router from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { FaStar } from 'react-icons/fa'
@@ -97,7 +98,6 @@ import {
   CharityGiveawayCard,
   CharityGiveawayData,
 } from 'web/components/shop/charity-giveaway-card'
-import { CharityChampionCard } from 'web/components/shop/charity-champion-card'
 import { useAPIGetter } from 'web/hooks/use-api-getter'
 import { getAnimationLocationText } from 'common/shop/display-config'
 import { getTotalPrizePool } from 'common/sweepstakes'
@@ -237,11 +237,9 @@ export default function ShopPage() {
   const isAdminOrMod = useAdminOrMod()
   const optimisticContext = useOptimisticEntitlements()
 
-  // Fetch charity giveaway data once for both cards
-  const { data: charityData, refresh: refreshCharityData } = useAPIGetter(
-    'get-charity-giveaway',
-    { userId: user?.id }
-  )
+  const { data: charityData } = useAPIGetter('get-charity-giveaway', {
+    userId: user?.id,
+  })
   const charityGiveawayData = charityData as CharityGiveawayData | undefined
   const isCharityLoading = charityData === undefined
 
@@ -534,7 +532,7 @@ export default function ShopPage() {
   const getToggleVersion = () => toggleVersionRef.current
 
   return (
-    <Page trackPageView="shop page" className="p-3">
+    <Page trackPageView="shop page" className="!col-span-7">
       <SEO
         title="Shop"
         description="Spend your mana in the Manifold shop"
@@ -548,7 +546,7 @@ export default function ShopPage() {
         />
       )}
 
-      <Col className="mx-auto max-w-xl">
+      <Col className="mx-auto w-full max-w-3xl p-4">
         <Row className="mb-2 items-center gap-2 text-2xl font-semibold">
           <FaGem className="h-6 w-6 text-violet-500" />
           Mana Shop
@@ -576,12 +574,19 @@ export default function ShopPage() {
           onPurchaseComplete={handlePurchaseComplete}
         />
 
-        {/* Prize Drawing card */}
-        <PrizeDrawingCard />
+        {/* Prize Drawing + Charity Giveaway row */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PrizeDrawingCard />
+          <CharityGiveawayCard
+            data={charityGiveawayData}
+            isLoading={isCharityLoading}
+            user={user}
+          />
+        </div>
 
         {/* Header and sort dropdown */}
         <Row className="mb-2 mt-8 items-center justify-between">
-          <span className="text-lg font-semibold">Cosmetics & goods</span>
+          <span className="text-lg font-semibold">Digital goods & more</span>
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -630,12 +635,12 @@ export default function ShopPage() {
           })}
         </Row>
 
-        {/* Tickets — shown first on 'all' and 'ticket' filters */}
-        {(filterOption === 'all' || filterOption === 'ticket') &&
-          getTicketItems().filter((item) => !item.hidden || showHidden).length >
-            0 && (
-            <div className="mb-4 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
-              {getTicketItems()
+        {/* Tickets + shop items — hidden when merch filter is active */}
+        {filterOption !== 'merch' && (
+          <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
+            {/* Tickets first on 'all' and 'ticket' filters */}
+            {(filterOption === 'all' || filterOption === 'ticket') &&
+              getTicketItems()
                 .filter((item) => !item.hidden || showHidden)
                 .map((item) => (
                   <TicketItemCard
@@ -645,54 +650,51 @@ export default function ShopPage() {
                     allEntitlements={effectiveEntitlements}
                   />
                 ))}
-            </div>
-          )}
 
-        {/* Shop items grid — hidden when merch or ticket filter is active */}
-        {filterOption !== 'merch' && filterOption !== 'ticket' && (
-          <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
-            {sortItems(
-              filterItems(
-                SHOP_ITEMS.filter(
-                  (item) =>
-                    !SUPPORTER_ENTITLEMENT_IDS.includes(
-                      item.id as (typeof SUPPORTER_ENTITLEMENT_IDS)[number]
-                    ) &&
-                    item.id !== 'charity-champion-trophy' &&
-                    item.category !== 'merch' &&
-                    item.category !== 'ticket' &&
-                    (!item.hidden ||
-                      showHidden ||
-                      ownedItemIds.has(getEntitlementId(item)) ||
-                      (item.seasonalAvailability &&
-                        isSeasonalItemAvailable(item)))
+            {/* Regular shop items — hidden when ticket filter is active */}
+            {filterOption !== 'ticket' &&
+              sortItems(
+                filterItems(
+                  SHOP_ITEMS.filter(
+                    (item) =>
+                      !SUPPORTER_ENTITLEMENT_IDS.includes(
+                        item.id as (typeof SUPPORTER_ENTITLEMENT_IDS)[number]
+                      ) &&
+                      item.id !== 'charity-champion-trophy' &&
+                      item.category !== 'merch' &&
+                      item.category !== 'ticket' &&
+                      (!item.hidden ||
+                        showHidden ||
+                        ownedItemIds.has(getEntitlementId(item)) ||
+                        (item.seasonalAvailability &&
+                          isSeasonalItemAvailable(item)))
+                  ),
+                  filterOption
                 ),
-                filterOption
-              ),
-              sortOption
-            ).map((item) => {
-              const entitlementId = getEntitlementId(item)
-              const entitlement = effectiveEntitlements.find(
-                (e) =>
-                  e.entitlementId === entitlementId && isEntitlementOwned(e)
-              )
-              return (
-                <ShopItemCard
-                  key={item.id}
-                  item={item}
-                  user={user}
-                  owned={ownedItemIds.has(entitlementId)}
-                  entitlement={entitlement}
-                  allEntitlements={effectiveEntitlements}
-                  justPurchased={justPurchased === item.id}
-                  onPurchaseComplete={handlePurchaseComplete}
-                  onToggleComplete={handleToggleComplete}
-                  onMetadataChange={handleMetadataChange}
-                  getToggleVersion={getToggleVersion}
-                  localStreakBonus={localStreakBonus}
-                />
-              )
-            })}
+                sortOption
+              ).map((item) => {
+                const entitlementId = getEntitlementId(item)
+                const entitlement = effectiveEntitlements.find(
+                  (e) =>
+                    e.entitlementId === entitlementId && isEntitlementOwned(e)
+                )
+                return (
+                  <ShopItemCard
+                    key={item.id}
+                    item={item}
+                    user={user}
+                    owned={ownedItemIds.has(entitlementId)}
+                    entitlement={entitlement}
+                    allEntitlements={effectiveEntitlements}
+                    justPurchased={justPurchased === item.id}
+                    onPurchaseComplete={handlePurchaseComplete}
+                    onToggleComplete={handleToggleComplete}
+                    onMetadataChange={handleMetadataChange}
+                    getToggleVersion={getToggleVersion}
+                    localStreakBonus={localStreakBonus}
+                  />
+                )
+              })}
           </div>
         )}
 
@@ -711,7 +713,7 @@ export default function ShopPage() {
               )}
               <div
                 className={clsx(
-                  'grid grid-cols-1 gap-4 min-[360px]:grid-cols-2',
+                  'grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 lg:grid-cols-3',
                   filterOption === 'merch' && 'mt-0'
                 )}
               >
@@ -728,25 +730,6 @@ export default function ShopPage() {
               </div>
             </>
           )}
-
-        {/* Charity giveaway and champion cards */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <CharityGiveawayCard
-            data={charityGiveawayData}
-            isLoading={isCharityLoading}
-            user={user}
-          />
-          <CharityChampionCard
-            data={charityGiveawayData}
-            isLoading={isCharityLoading}
-            user={user}
-            entitlements={effectiveEntitlements}
-            onEntitlementsChange={(newEntitlements) => {
-              setLocalEntitlements(newEntitlements)
-              refreshCharityData()
-            }}
-          />
-        </div>
 
         {/* {isAdminOrMod && <AdminTestingTools user={user} showHidden={showHidden} setShowHidden={setShowHidden} />} */}
       </Col>
@@ -1952,12 +1935,9 @@ function SupporterCard(props: {
     entitlements?: UserEntitlement[]
   ) => void
 }) {
-  const { entitlements, onPurchaseComplete } = props
+  const { entitlements } = props
   const user = useUser()
-  const [showModal, setShowModal] = useState(false)
   const [hoveredTier, setHoveredTier] = useState<SupporterTier | null>(null)
-  const [modalInitialTier, setModalInitialTier] =
-    useState<SupporterTier | null>(null)
 
   const currentTier = getUserSupporterTier(entitlements)
   const supporterEntitlement = getSupporterEnt(entitlements)
@@ -1983,15 +1963,6 @@ function SupporterCard(props: {
     premium: 10000,
   }
 
-  // Reset modal initial tier and hover state when modal closes
-  const handleSetShowModal = (open: boolean) => {
-    setShowModal(open)
-    if (!open) {
-      setModalInitialTier(null)
-      setHoveredTier(null) // Clear hover state on modal close
-    }
-  }
-
   // Check if device supports hover (desktop)
   const supportsHover =
     typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
@@ -1999,9 +1970,9 @@ function SupporterCard(props: {
   return (
     <>
       <div
-        onClick={() => handleSetShowModal(true)}
+        onClick={() => Router.push('/membership')}
         className={clsx(
-          'group relative mb-8 w-full cursor-pointer overflow-hidden rounded-xl p-1 text-left transition-all duration-300',
+          'group relative mb-6 w-full cursor-pointer overflow-hidden rounded-xl p-1 text-left transition-all duration-300',
           'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800',
           // Default state (no tier owned, no hover)
           !hoveredTier &&
@@ -2054,21 +2025,27 @@ function SupporterCard(props: {
           )}
         />
 
-        <div className="bg-canvas-0 relative rounded-lg p-5">
+        <div className="bg-canvas-0 relative rounded-lg p-4">
           {/* Header */}
           <Row className="items-start justify-between">
-            <Col className="gap-1">
+            <Row className="flex-wrap items-center gap-x-2 gap-y-0.5">
               <Row className="items-center gap-2">
                 <FaStar
-                  className="h-6 w-6 text-amber-500"
+                  className="h-5 w-5 text-amber-500"
                   style={{
                     filter: 'drop-shadow(0 0 3px rgba(245, 158, 11, 0.5))',
                   }}
                 />
-                <span className="text-xl font-bold">Manifold Membership</span>
+                <span className="text-lg font-bold">Manifold Membership</span>
               </Row>
-              <p className="text-ink-600 text-sm">Unlock premium benefits</p>
-            </Col>
+              <span className="text-primary-600 text-sm font-medium group-hover:underline">
+                {isSupporter
+                  ? isAutoRenewing
+                    ? 'Manage Subscription →'
+                    : 'Resubscribe →'
+                  : 'See details & subscribe →'}
+              </span>
+            </Row>
             {isSupporter && (
               <div className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900 dark:text-amber-300">
                 {SUPPORTER_TIERS[currentTier].name.toUpperCase()}
@@ -2077,7 +2054,7 @@ function SupporterCard(props: {
           </Row>
 
           {/* Profile Preview - horizontal layout like modal */}
-          <div className="my-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-orange-50/50 px-4 py-3 dark:from-slate-700/50 dark:to-slate-700/50">
+          <div className="my-3 rounded-lg bg-gradient-to-r from-amber-50/50 to-orange-50/50 px-3 py-2 dark:from-slate-700/50 dark:to-slate-700/50">
             <Row className="flex-wrap items-center justify-between gap-3">
               {/* Left: Avatar + Name + Current Badge */}
               <Row className="items-center gap-3">
@@ -2168,8 +2145,9 @@ function SupporterCard(props: {
             </Row>
           </div>
 
-          {/* Mini Tier Selector (interactive with hover) */}
-          <div className="mb-4 grid grid-cols-3 gap-2">
+          {/* Mini Tier Selector (interactive with hover) — hidden for existing subscribers */}
+          {!isSupporter && (
+          <div className="mb-3 grid grid-cols-3 gap-2">
             {(['basic', 'plus', 'premium'] as const).map((tier) => {
               const isCurrentUserTier = currentTier === tier
               const isHovered = hoveredTier === tier
@@ -2178,13 +2156,12 @@ function SupporterCard(props: {
                   key={tier}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setModalInitialTier(tier)
-                    handleSetShowModal(true)
+                    Router.push(`/membership?tier=${tier}`)
                   }}
                   onMouseEnter={() => supportsHover && setHoveredTier(tier)}
                   onMouseLeave={() => supportsHover && setHoveredTier(null)}
                   className={clsx(
-                    'relative flex flex-col items-center rounded-lg border-2 px-2 py-2 transition-all duration-150',
+                    'relative flex flex-col items-center rounded-lg border-2 px-2 py-1.5 transition-all duration-150',
                     // Current user's tier styling
                     isCurrentUserTier &&
                       tier === 'basic' &&
@@ -2255,25 +2232,9 @@ function SupporterCard(props: {
               )
             })}
           </div>
-
-          {/* CTA */}
-          <div className="text-primary-600 text-center text-sm font-medium group-hover:underline">
-            {isSupporter
-              ? isAutoRenewing
-                ? `Manage Subscription →`
-                : 'Resubscribe →'
-              : 'See details & subscribe →'}
-          </div>
+          )}
         </div>
       </div>
-
-      <SupporterModal
-        open={showModal}
-        setOpen={handleSetShowModal}
-        entitlements={entitlements}
-        onPurchaseComplete={onPurchaseComplete}
-        initialTier={modalInitialTier}
-      />
     </>
   )
 }
@@ -2630,7 +2591,7 @@ function SupporterModal(props: {
           {/* Link to full page */}
           <div className="text-center">
             <Link
-              href="/supporter"
+              href="/membership"
               onClick={() => setOpen(false)}
               className="text-primary-600 hover:text-primary-700 text-sm font-medium"
             >
