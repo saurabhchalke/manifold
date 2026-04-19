@@ -103,6 +103,33 @@ export function ManifestBanner(props: { hideBanner: () => void }) {
   )
 }
 
+export function Manifest2026Banner() {
+  const [showBanner, hideBanner] = useBanner('manifest-2026')
+  if (!showBanner) return null
+  return (
+    <Banner
+      className="border-primary-300 from-primary-100 to-primary-200 my-2 border bg-gradient-to-b py-2"
+      link="https://manifest.is"
+      setShowBanner={hideBanner}
+    >
+      <Row className="items-center gap-2 py-1">
+        <LogoIcon
+          className="h-6 w-6 flex-shrink-0 text-black dark:text-white"
+          height={24}
+          width={24}
+          aria-hidden
+          strokeWidth={1}
+        />
+        <div>
+          <span className="font-semibold">Manifest 2026</span> is June 12-14th
+          in Berkeley! Get tickets now!
+        </div>
+        <ArrowRightIcon className="ml-1 h-4 w-4" />
+      </Row>
+    </Banner>
+  )
+}
+
 export function Manifest2025Banner(props: { hideBanner: () => void }) {
   const { hideBanner } = props
   return (
