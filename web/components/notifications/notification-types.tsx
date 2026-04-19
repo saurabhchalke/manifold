@@ -2300,13 +2300,13 @@ function PrizeDrawingCampaignNotification(props: {
         </span>
       ) : hasEnded ? (
         <span>
-          Prize Drawing #{data.sweepstakesNum} has ended. <b>{prizeAmount}</b> in
-          prizes.
+          Prize Drawing #{data.sweepstakesNum} has ended. <b>{prizeAmount}</b>{' '}
+          in prizes.
         </span>
       ) : (
         <span>
-          Prize Drawing #{data.sweepstakesNum} ends in {timeLeft}. <b>{prizeAmount}</b>{' '}
-          in prizes.
+          Prize Drawing #{data.sweepstakesNum} ends in {timeLeft}.{' '}
+          <b>{prizeAmount}</b> in prizes.
         </span>
       )}
     </NotificationFrame>
@@ -2340,13 +2340,13 @@ function CharityGiveawayCampaignNotification(props: {
         </span>
       ) : hasEnded ? (
         <span>
-          Charity Giveaway #{data.giveawayNum} has ended. <b>{prizeAmount}</b> prize
-          amount.
+          Charity Giveaway #{data.giveawayNum} has ended. <b>{prizeAmount}</b>{' '}
+          prize amount.
         </span>
       ) : (
         <span>
-          Charity Giveaway #{data.giveawayNum} ends in {timeLeft}. <b>{prizeAmount}</b>{' '}
-          prize amount.
+          Charity Giveaway #{data.giveawayNum} ends in {timeLeft}.{' '}
+          <b>{prizeAmount}</b> prize amount.
         </span>
       )}
     </NotificationFrame>
