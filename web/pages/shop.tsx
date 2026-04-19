@@ -956,27 +956,8 @@ function TicketItemCard(props: {
           </Row>
 
           <div className="text-ink-700 text-xs leading-relaxed">
-            Full access to Manifest, Friday through Sunday. 5 meals included.
-            Get a{' '}
-            <b
-              className={
-                comingSoon
-                  ? 'text-ink-900'
-                  : 'text-amber-700 dark:text-amber-500'
-              }
-            >
-              100% off code
-            </b>{' '}
-            for{' '}
-            <a
-              href="https://manifest.is"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary-700 dark:text-primary-500 underline"
-            >
-              manifest.is
-            </a>
-            .
+            Full access to Manifest 2026, Friday through Sunday. 5 meals
+            included.
           </div>
 
           {/* Stock display */}
@@ -1053,7 +1034,7 @@ function TicketItemCard(props: {
                 ? 'Insufficient balance'
                 : isEarlyBird
                 ? 'Claim Early Bird Code'
-                : 'Claim Ticket Code'}
+                : 'Buy Ticket'}
             </Button>
           </Col>
         </Col>
@@ -2147,91 +2128,91 @@ function SupporterCard(props: {
 
           {/* Mini Tier Selector (interactive with hover) — hidden for existing subscribers */}
           {!isSupporter && (
-          <div className="mb-3 grid grid-cols-3 gap-2">
-            {(['basic', 'plus', 'premium'] as const).map((tier) => {
-              const isCurrentUserTier = currentTier === tier
-              const isHovered = hoveredTier === tier
-              return (
-                <button
-                  key={tier}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    Router.push(`/membership?tier=${tier}`)
-                  }}
-                  onMouseEnter={() => supportsHover && setHoveredTier(tier)}
-                  onMouseLeave={() => supportsHover && setHoveredTier(null)}
-                  className={clsx(
-                    'relative flex flex-col items-center rounded-lg border-2 px-2 py-1.5 transition-all duration-150',
-                    // Current user's tier styling
-                    isCurrentUserTier &&
-                      tier === 'basic' &&
-                      'border-gray-400 bg-gray-50 dark:bg-gray-900/30',
-                    isCurrentUserTier &&
-                      tier === 'plus' &&
-                      'border-indigo-400 bg-indigo-50 shadow-md shadow-indigo-200/50 dark:bg-indigo-950/30',
-                    isCurrentUserTier &&
-                      tier === 'premium' &&
-                      'border-amber-400 bg-amber-50 shadow-lg shadow-amber-200/50 dark:bg-amber-950/30',
-                    // Hover styling (when not current tier)
-                    !isCurrentUserTier &&
-                      isHovered &&
-                      tier === 'basic' &&
-                      'border-gray-400 bg-gray-50 shadow-[0_0_8px_rgba(107,114,128,0.4)] dark:bg-gray-900/30',
-                    !isCurrentUserTier &&
-                      isHovered &&
-                      tier === 'plus' &&
-                      'border-indigo-400 bg-indigo-50 shadow-[0_0_12px_rgba(99,102,241,0.5)] dark:bg-indigo-950/30',
-                    !isCurrentUserTier &&
-                      isHovered &&
-                      tier === 'premium' &&
-                      'border-amber-400 bg-amber-50 shadow-[0_0_16px_rgba(245,158,11,0.5)] dark:bg-amber-950/30',
-                    // Default state
-                    !isCurrentUserTier &&
-                      !isHovered &&
-                      'border-ink-200 bg-canvas-0 hover:border-ink-300'
-                  )}
-                >
-                  {isCurrentUserTier && (
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 rounded bg-green-500 px-1 text-[8px] font-bold text-white">
-                      CURRENT
-                    </div>
-                  )}
-                  <div className="relative">
-                    <FaStar
-                      className={clsx(
-                        'h-4 w-4',
-                        tier === 'basic' && 'text-gray-400',
-                        tier === 'plus' && 'text-indigo-500',
-                        tier === 'premium' && 'text-amber-500'
-                      )}
-                      style={
-                        tier === 'premium'
-                          ? {
-                              filter:
-                                'drop-shadow(0 0 3px rgba(245, 158, 11, 0.5))',
-                            }
-                          : undefined
-                      }
-                    />
-                    {tier === 'premium' && (
-                      <FaStar className="absolute inset-0 h-4 w-4 animate-pulse text-amber-500 opacity-40 blur-[2px]" />
-                    )}
-                  </div>
-                  <div
+            <div className="mb-3 grid grid-cols-3 gap-2">
+              {(['basic', 'plus', 'premium'] as const).map((tier) => {
+                const isCurrentUserTier = currentTier === tier
+                const isHovered = hoveredTier === tier
+                return (
+                  <button
+                    key={tier}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      Router.push(`/membership?tier=${tier}`)
+                    }}
+                    onMouseEnter={() => supportsHover && setHoveredTier(tier)}
+                    onMouseLeave={() => supportsHover && setHoveredTier(null)}
                     className={clsx(
-                      'text-xs font-semibold',
-                      SUPPORTER_TIERS[tier].textColor
+                      'relative flex flex-col items-center rounded-lg border-2 px-2 py-1.5 transition-all duration-150',
+                      // Current user's tier styling
+                      isCurrentUserTier &&
+                        tier === 'basic' &&
+                        'border-gray-400 bg-gray-50 dark:bg-gray-900/30',
+                      isCurrentUserTier &&
+                        tier === 'plus' &&
+                        'border-indigo-400 bg-indigo-50 shadow-md shadow-indigo-200/50 dark:bg-indigo-950/30',
+                      isCurrentUserTier &&
+                        tier === 'premium' &&
+                        'border-amber-400 bg-amber-50 shadow-lg shadow-amber-200/50 dark:bg-amber-950/30',
+                      // Hover styling (when not current tier)
+                      !isCurrentUserTier &&
+                        isHovered &&
+                        tier === 'basic' &&
+                        'border-gray-400 bg-gray-50 shadow-[0_0_8px_rgba(107,114,128,0.4)] dark:bg-gray-900/30',
+                      !isCurrentUserTier &&
+                        isHovered &&
+                        tier === 'plus' &&
+                        'border-indigo-400 bg-indigo-50 shadow-[0_0_12px_rgba(99,102,241,0.5)] dark:bg-indigo-950/30',
+                      !isCurrentUserTier &&
+                        isHovered &&
+                        tier === 'premium' &&
+                        'border-amber-400 bg-amber-50 shadow-[0_0_16px_rgba(245,158,11,0.5)] dark:bg-amber-950/30',
+                      // Default state
+                      !isCurrentUserTier &&
+                        !isHovered &&
+                        'border-ink-200 bg-canvas-0 hover:border-ink-300'
                     )}
                   >
-                    {SUPPORTER_TIERS[tier].name}
-                  </div>
-                  <div className="text-ink-500 text-[10px]">
-                    {formatMoney(tierPrices[tier])}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+                    {isCurrentUserTier && (
+                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 rounded bg-green-500 px-1 text-[8px] font-bold text-white">
+                        CURRENT
+                      </div>
+                    )}
+                    <div className="relative">
+                      <FaStar
+                        className={clsx(
+                          'h-4 w-4',
+                          tier === 'basic' && 'text-gray-400',
+                          tier === 'plus' && 'text-indigo-500',
+                          tier === 'premium' && 'text-amber-500'
+                        )}
+                        style={
+                          tier === 'premium'
+                            ? {
+                                filter:
+                                  'drop-shadow(0 0 3px rgba(245, 158, 11, 0.5))',
+                              }
+                            : undefined
+                        }
+                      />
+                      {tier === 'premium' && (
+                        <FaStar className="absolute inset-0 h-4 w-4 animate-pulse text-amber-500 opacity-40 blur-[2px]" />
+                      )}
+                    </div>
+                    <div
+                      className={clsx(
+                        'text-xs font-semibold',
+                        SUPPORTER_TIERS[tier].textColor
+                      )}
+                    >
+                      {SUPPORTER_TIERS[tier].name}
+                    </div>
+                    <div className="text-ink-500 text-[10px]">
+                      {formatMoney(tierPrices[tier])}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
           )}
         </div>
       </div>
