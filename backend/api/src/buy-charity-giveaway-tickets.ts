@@ -60,11 +60,6 @@ export const buyCharityGiveawayTickets: APIHandler<
     // Calculate cost
     const manaSpent = calculateGiveawayTicketCost(currentTickets, numTickets, giveaway.prize_amount_usd)
 
-    // Minimum purchase of 1 mana
-    if (manaSpent < 1) {
-      throw new APIError(400, 'Minimum purchase is 1 mana')
-    }
-
     // Check user balance
     const user = await getUser(auth.uid, tx)
     if (!user) {

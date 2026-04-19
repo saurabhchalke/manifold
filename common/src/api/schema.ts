@@ -3310,7 +3310,7 @@ export const API = (_apiTypeCheck = {
       .object({
         giveawayNum: z.number(),
         charityId: z.string(),
-        numTickets: z.number().int().positive(),
+        numTickets: z.number().positive(),
       })
       .strict(),
     returns: {} as {
