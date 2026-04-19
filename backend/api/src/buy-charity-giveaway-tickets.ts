@@ -7,11 +7,19 @@ import { createCharityChampionEligibleNotification } from 'shared/create-notific
 import { charities } from 'common/charity'
 import { calculateGiveawayTicketCost } from 'common/charity-giveaway'
 import { CHARITY_CHAMPION_ENTITLEMENT_ID } from 'common/shop/items'
+import { isAdminId } from 'common/envs/constants'
 
 export const buyCharityGiveawayTickets: APIHandler<
   'buy-charity-giveaway-tickets'
 > = async (props, auth) => {
   const { giveawayNum, charityId, numTickets } = props
+
+  if (isAdminId(auth.uid)) {
+    throw new APIError(
+      403,
+      'Admins are not eligible to participate in the charity giveaway.'
+    )
+  }
 
   // Validate charity exists
   const charity = charities.find((c) => c.id === charityId)

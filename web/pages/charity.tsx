@@ -426,8 +426,8 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
           <p className="text-ink-600 text-lg leading-relaxed">
             Manifold is giving ${giveaway.prizeAmountUsd.toLocaleString()} to
             charity—you decide which one. Convert mana into entries to boost a
-            charity's odds, and on March 1st, we'll draw one lucky entry to
-            determine the winning charity.
+            charity's odds, and when the giveaway ends, we'll draw one lucky
+            entry to determine the winning charity.
           </p>
         </Col>
 
@@ -441,7 +441,18 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
           <StatCard
             label="Time Left"
             value={timeRemaining}
-            sublabel={timeRemainingDetailed}
+            sublabel={
+              isClosed
+                ? timeRemainingDetailed
+                : `Ends ${new Date(giveaway.closeTime).toLocaleDateString(
+                    undefined,
+                    {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }
+                  )}`
+            }
             color={isClosed ? 'red' : 'amber'}
           />
           <StatCard
@@ -469,7 +480,7 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
         )}
 
         {/* Purchase Form */}
-        {!isClosed && user && (
+        {!isClosed && user && !isAdmin && (
           <PurchaseForm
             selectedCharityId={selectedCharityId}
             setSelectedCharityId={setSelectedCharityId}
@@ -482,6 +493,19 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
             isSubmitting={isSubmitting}
             handleBuyTickets={handleBuyTickets}
           />
+        )}
+
+        {!isClosed && user && isAdmin && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-center dark:border-amber-800 dark:bg-amber-950/30">
+            <div className="mb-1 text-2xl">🛡️</div>
+            <h3 className="text-ink-900 font-semibold">
+              Admins can't participate
+            </h3>
+            <p className="text-ink-600 mt-1 text-sm">
+              To keep the giveaway fair, Manifold admins aren't eligible to get
+              entries.
+            </p>
+          </div>
         )}
 
         {!isClosed && !user && (
