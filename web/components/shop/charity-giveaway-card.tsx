@@ -9,6 +9,16 @@ import { Row } from '../layout/row'
 import { Button } from '../buttons/button'
 import { charities } from 'common/charity'
 
+function formatEntries(entries: number): string {
+  if (entries >= 1000) {
+    return entries.toLocaleString(undefined, { maximumFractionDigits: 1 })
+  } else if (entries >= 1) {
+    return entries.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  } else {
+    return entries.toLocaleString(undefined, { maximumFractionDigits: 4 })
+  }
+}
+
 // Export the data type for use by other components
 export type CharityGiveawayData = {
   giveaway?: {
@@ -166,17 +176,17 @@ export function CharityGiveawayCard(props: {
   // Active giveaway card (still open for tickets)
   if (!hasWinner && !isClosed) {
     return (
-      <Link href="/charity" className={clsx('block', className)}>
+      <Link href="/charity" className={clsx('block h-full', className)}>
         <div
           className={clsx(
-            'group relative overflow-hidden rounded-xl p-1 transition-all duration-200',
+            'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
             'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500',
             'hover:shadow-lg hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30',
             'hover:-translate-y-1'
           )}
         >
           {/* Inner card content */}
-          <div className="rounded-lg bg-white p-4 dark:bg-gray-900">
+          <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
             {/* Header */}
             <Row className="mb-3 items-center gap-2">
               <FaHeart className="h-5 w-5 text-emerald-500" />
@@ -202,7 +212,7 @@ export function CharityGiveawayCard(props: {
               </Col>
               <Col className="flex-1">
                 <div className="text-lg font-bold text-cyan-600 sm:text-xl">
-                  {Math.floor(totalTickets).toLocaleString()}
+                  {formatEntries(totalTickets)}
                 </div>
                 <div className="text-ink-500 text-[10px]">Entries</div>
               </Col>
@@ -212,7 +222,7 @@ export function CharityGiveawayCard(props: {
             <Button
               color="green"
               size="sm"
-              className="w-full group-hover:shadow-md"
+              className="mt-auto w-full group-hover:shadow-md"
             >
               View Giveaway →
             </Button>
@@ -225,16 +235,16 @@ export function CharityGiveawayCard(props: {
   // Closed but winner not yet drawn — awaiting draw
   if (!hasWinner && isClosed) {
     return (
-      <Link href="/charity" className={clsx('block', className)}>
+      <Link href="/charity" className={clsx('block h-full', className)}>
         <div
           className={clsx(
-            'group relative overflow-hidden rounded-xl p-1 transition-all duration-200',
+            'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
             'bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400',
             'hover:shadow-lg hover:shadow-amber-200/50 dark:hover:shadow-amber-900/30',
             'hover:-translate-y-1'
           )}
         >
-          <div className="flex flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
+          <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
             {/* Header */}
             <Row className="mb-3 items-center gap-2">
               <FaGift className="h-5 w-5 text-amber-500" />
@@ -254,7 +264,7 @@ export function CharityGiveawayCard(props: {
               </Col>
               <Col className="flex-1">
                 <div className="text-lg font-bold text-amber-600 sm:text-xl">
-                  {Math.floor(totalTickets).toLocaleString()}
+                  {formatEntries(totalTickets)}
                 </div>
                 <div className="text-ink-500 text-[10px]">Entries</div>
               </Col>
@@ -280,17 +290,17 @@ export function CharityGiveawayCard(props: {
 
   // Winner selected - show results with leaderboard
   return (
-    <Link href="/charity" className={clsx('block', className)}>
+    <Link href="/charity" className={clsx('block h-full', className)}>
       <div
         className={clsx(
-          'group relative overflow-hidden rounded-xl p-1 transition-all duration-200',
+          'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
           'bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400',
           'hover:shadow-lg hover:shadow-amber-200/50 dark:hover:shadow-amber-900/30',
           'hover:-translate-y-1'
         )}
       >
         {/* Inner card content */}
-        <div className="flex flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
+        <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
           {/* Header */}
           <Row className="mb-3 items-center gap-2">
             <FaHeart className="h-5 w-5 text-amber-500" />

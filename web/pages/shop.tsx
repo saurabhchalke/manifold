@@ -2680,16 +2680,16 @@ function PrizeDrawingCard() {
   const isClosed = sweepstakes.closeTime <= Date.now()
 
   return (
-    <Link href="/prize">
+    <Link href="/prize" className="block h-full">
       <div
         className={clsx(
-          'group relative mb-8 overflow-hidden rounded-xl p-1 transition-all duration-200',
+          'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
           'bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-500',
           'hover:shadow-lg hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30',
           'hover:-translate-y-1'
         )}
       >
-        <div className="rounded-lg bg-white p-4 dark:bg-gray-900">
+        <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
           {/* Header */}
           <Row className="mb-3 items-center gap-2">
             <FaGift className="h-5 w-5 text-teal-500" />
@@ -2723,14 +2723,11 @@ function PrizeDrawingCard() {
             </Col>
           </Row>
 
-          {/* Description */}
-          <p className="text-ink-600 mb-3 text-sm">Win USDC prizes!</p>
-
           {/* CTA */}
           <Button
             color="indigo"
             size="sm"
-            className="w-full group-hover:shadow-md"
+            className="mt-auto w-full group-hover:shadow-md"
           >
             Enter Drawing →
           </Button>
