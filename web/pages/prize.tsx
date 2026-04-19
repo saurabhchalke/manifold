@@ -1318,26 +1318,27 @@ function WinnersDisplay(props: {
           {winners.map((winner) => (
             <Row
               key={winner.ticketId}
-              className="items-center gap-4 rounded-xl border border-amber-200 bg-white/80 p-4 dark:border-amber-700 dark:bg-gray-900/50"
+              className="items-center gap-2 rounded-xl border border-amber-200 bg-white/80 p-3 dark:border-amber-700 dark:bg-gray-900/50 sm:gap-4 sm:p-4"
             >
-              <div className="text-ink-900 w-16 text-center text-lg font-bold">
+              <div className="text-ink-900 w-10 shrink-0 text-center text-base font-bold sm:w-16 sm:text-lg">
                 {getRankLabel(winner.rank)}
               </div>
               <Avatar
                 username={winner.user.username}
                 avatarUrl={winner.user.avatarUrl}
                 size="md"
+                className="shrink-0"
               />
               <Col className="min-w-0 flex-1">
                 <UserLink
                   user={winner.user}
-                  className="text-ink-900 font-semibold"
+                  className="text-ink-900 truncate font-semibold"
                 />
-                <span className="text-ink-500 text-sm">
+                <span className="text-ink-500 truncate text-sm">
                   @{winner.user.username}
                 </span>
               </Col>
-              <div className="text-lg font-bold text-teal-600 dark:text-teal-400">
+              <div className="shrink-0 text-base font-bold text-teal-600 dark:text-teal-400 sm:text-lg">
                 ${winner.prizeUsdc.toLocaleString()}
               </div>
             </Row>
