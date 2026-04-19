@@ -62,9 +62,7 @@ export default function SupporterPage() {
     const queryTier = router.query.tier
     if (
       typeof queryTier === 'string' &&
-      (queryTier === 'basic' ||
-        queryTier === 'plus' ||
-        queryTier === 'premium')
+      (queryTier === 'basic' || queryTier === 'plus' || queryTier === 'premium')
     ) {
       setSelectedTier(queryTier)
     }
