@@ -850,6 +850,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   // Tickets
   {
     id: 'manifest-ticket',
+    hidden: true,
     name: 'Manifest 2026 — Early Bird Ticket',
     description:
       'Claim your spot at Manifest 2026 — Lighthaven, Berkeley · June 12–14. You will receive a 100% off early-bird discount code, redeemable on manifest.is. Limited to the first 10 Manifold early-bird claims — more tickets at standard pricing will be added later. Code is single-use and non-transferable; the email on your manifest.is ticket must match your Manifold email.',
