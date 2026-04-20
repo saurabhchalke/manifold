@@ -18,6 +18,7 @@ import { useState } from 'react'
 import TrophyIcon from 'web/lib/icons/trophy-icon.svg'
 
 import { buildArray } from 'common/util/array'
+import { SHOP_ITEMS } from 'common/shop/items'
 import { DAY_MS, isAprilFools } from 'common/util/time'
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import Link from 'next/link'
@@ -45,11 +46,15 @@ import { NavItem, SidebarItem } from './sidebar-item'
 
 export const SPEND_MANA_ENABLED = true
 
-// Set to true to show a "NEW" badge on the Shop nav item
-const SHOW_SHOP_NEW_BADGE = false
-
 // Set to true to show a "Manifest" badge on the Shop nav item (early-bird tickets)
 const SHOW_SHOP_MANIFEST_BADGE = true
+
+// Newest visibleSinceTime across all visible items. The sidebar NEW badge
+// fires when this exceeds the current user's lastShopVisitTime.
+const NEWEST_SHOP_ITEM_TIME = Math.max(
+  0,
+  ...SHOP_ITEMS.filter((i) => !i.hidden).map((i) => i.visibleSinceTime ?? 0)
+)
 
 const BADGE_COLORS = [
   'bg-red-500 text-white',
@@ -140,16 +145,26 @@ export default function Sidebar(props: {
 
   const isLiveTV = useTVIsLive(10)
 
+  // Per-user NEW badge: shows once user data is loaded AND any visible shop
+  // item became visible since the user last visited /shop. Default-to-hide
+  // while user is loading prevents the badge from flashing in then out.
+  const lastShopVisit =
+    user?.lastShopVisitTime ?? user?.createdTime ?? 0
+  const showShopNewBadge =
+    !!user && NEWEST_SHOP_ITEM_TIME > lastShopVisit
+
   const navOptions = isMobile
     ? getMobileNav(!!user, {
         isNewUser,
         isLiveTV,
         isAdminOrMod: isAdminOrMod,
+        showShopNewBadge,
       })
     : getDesktopNav(!!user, () => setIsModalOpen(true), {
         isNewUser,
         isLiveTV,
         isAdminOrMod: isAdminOrMod,
+        showShopNewBadge,
       })
 
   const bottomNavOptions = bottomNav(
@@ -243,6 +258,7 @@ const getDesktopNav = (
   openDownloadApp: () => void,
   options: {
     isNewUser: boolean
+    showShopNewBadge: boolean
     isLiveTV?: boolean
     isAdminOrMod: boolean
   }
@@ -278,21 +294,25 @@ const getDesktopNav = (
         name: 'Shop',
         href: '/shop',
         icon: LuGem,
-        children: SHOW_SHOP_MANIFEST_BADGE ? (
-          <>
-            Shop
-            <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
-              Manifest
-            </span>
-          </>
-        ) : SHOW_SHOP_NEW_BADGE ? (
-          <>
-            Shop
-            <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-              NEW
-            </span>
-          </>
-        ) : undefined,
+        children:
+          options.showShopNewBadge || SHOW_SHOP_MANIFEST_BADGE ? (
+            <>
+              Shop
+              {/* NEW takes priority over Manifest — Manifest reappears once
+                  the user has cleared the NEW badge by visiting /shop. */}
+              {options.showShopNewBadge ? (
+                <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
+                  NEW
+                </span>
+              ) : (
+                SHOW_SHOP_MANIFEST_BADGE && (
+                  <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
+                    Manifest
+                  </span>
+                )
+              )}
+            </>
+          ) : undefined,
       },
       options.isAdminOrMod && {
         name: 'Reports',
@@ -313,11 +333,12 @@ const getMobileNav = (
   loggedIn: boolean,
   options: {
     isNewUser: boolean
+    showShopNewBadge: boolean
     isLiveTV?: boolean
     isAdminOrMod: boolean
   }
 ) => {
-  const { isAdminOrMod, isLiveTV } = options
+  const { isAdminOrMod, isLiveTV, showShopNewBadge } = options
 
   return buildArray<NavItem>(
     {
@@ -356,21 +377,25 @@ const getMobileNav = (
       name: 'Shop',
       href: '/shop',
       icon: LuGem,
-      children: SHOW_SHOP_MANIFEST_BADGE ? (
-        <>
-          Shop
-          <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
-            Manifest
-          </span>
-        </>
-      ) : SHOW_SHOP_NEW_BADGE ? (
-        <>
-          Shop
-          <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-            NEW
-          </span>
-        </>
-      ) : undefined,
+      children:
+        showShopNewBadge || SHOW_SHOP_MANIFEST_BADGE ? (
+          <>
+            Shop
+            {/* NEW takes priority over Manifest — Manifest reappears once
+                the user has cleared the NEW badge by visiting /shop. */}
+            {showShopNewBadge ? (
+              <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
+                NEW
+              </span>
+            ) : (
+              SHOW_SHOP_MANIFEST_BADGE && (
+                <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
+                  Manifest
+                </span>
+              )
+            )}
+          </>
+        ) : undefined,
     }
   )
 }

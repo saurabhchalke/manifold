@@ -51,12 +51,12 @@ import {
   AngelWingSvg,
   MonocleSvg,
   CrystalBallSvg,
-  DisguiseSvg,
   ArrowBadgeSvg,
   StonksMemeArrowSvg,
   BullHornSvg,
   BearEarSvg,
   CatEarSvg,
+  CatWhiskersSvg,
   SantaHatSvg,
   BunnyEarSvg,
   WizardHatSvg,
@@ -64,6 +64,7 @@ import {
   JesterHatSvg,
   FedoraSvg,
   DevilHornSvg,
+  HaloSvg,
 } from 'web/components/shop/item-svgs'
 import { Button } from 'web/components/buttons/button'
 import { Col } from 'web/components/layout/col'
@@ -78,6 +79,7 @@ import {
   RedCapSvg,
   GreenCapSvg,
   BlackCapSvg,
+  DisguiseOnAvatar,
 } from 'web/components/widgets/avatar'
 import { Card } from 'web/components/widgets/card'
 import { InfoTooltip } from 'web/components/widgets/info-tooltip'
@@ -97,7 +99,15 @@ import {
 import {
   CharityGiveawayCard,
   CharityGiveawayData,
+  formatEntries,
 } from 'web/components/shop/charity-giveaway-card'
+import { CharityChampionCard } from 'web/components/shop/charity-champion-card'
+import {
+  ENDED_PILL,
+  GiveawayPromoCard,
+  promoStatSizeClass,
+} from 'web/components/shop/giveaway-promo-card'
+import { NewBadge } from 'web/components/shop/new-badge'
 import { useAPIGetter } from 'web/hooks/use-api-getter'
 import { getAnimationLocationText } from 'common/shop/display-config'
 import { getTotalPrizePool } from 'common/sweepstakes'
@@ -111,6 +121,11 @@ const isEntitlementOwned = (e: UserEntitlement) => {
 // Default item order (manual curation)
 const ITEM_ORDER: Record<string, number> = {
   'streak-forgiveness': 1,
+  // 1.5 / 1.6 keep the trophy + champion's legacy in default positions 3 & 4
+  // (after manifest ticket and streak-forgiveness). Other sorts move them
+  // naturally; the legacy lands in the 'hovercard' category pill via its slot.
+  'charity-champion-trophy': 1.5,
+  'former-charity-champion': 1.6,
   'avatar-tinfoil-hat': 2,
   'avatar-golden-border': 3,
   'avatar-crown': 4,
@@ -141,6 +156,7 @@ const ITEM_ORDER: Record<string, number> = {
 
 type SortOption =
   | 'default'
+  | 'category'
   | 'price-asc'
   | 'price-desc'
   | 'name-asc'
@@ -182,7 +198,13 @@ const filterItems = (items: ShopItem[], filter: FilterOption): ShopItem[] => {
   if (filter === 'merch') return [] // merch handled by separate section
   if (filter === 'ticket') return [] // tickets handled by separate section
   const allowedSlots = FILTER_CONFIG[filter].slots
-  return items.filter((item) => allowedSlots.includes(item.slot))
+  return items.filter((item) => {
+    // filterOverride takes precedence over slot-based categorization so that
+    // e.g. `slot: 'unique'` items (Halo, Angel Wings, Crown) can appear under
+    // Hats / Avatar instead of being dumped into Hovercard.
+    if (item.filterOverride) return item.filterOverride === filter
+    return allowedSlots.includes(item.slot)
+  })
 }
 
 // Check if a filter tab has any visible items (for dynamic tab visibility)
@@ -208,9 +230,36 @@ const hasVisibleItems = (
   const allowedSlots = FILTER_CONFIG[filter].slots
   return allItems.some(
     (item) =>
-      allowedSlots.includes(item.slot) &&
+      // filterOverride takes precedence over slot-based matching
+      (item.filterOverride
+        ? item.filterOverride === filter
+        : allowedSlots.includes(item.slot)) &&
       (visibleItemIds.has(item.id) || showHidden)
   )
+}
+
+// Order in which non-special category pills appear; drives the 'category' sort
+const CATEGORY_PILL_ORDER: FilterOption[] = [
+  'hats',
+  'avatar',
+  'hovercard',
+  'buttons',
+  'other',
+]
+
+const getCategoryRank = (item: ShopItem): number => {
+  // filterOverride takes precedence so Halo / Crown / Angel Wings sort with
+  // their intended category instead of being pushed to Hovercard by slot.
+  if (item.filterOverride) {
+    const idx = CATEGORY_PILL_ORDER.indexOf(item.filterOverride)
+    if (idx >= 0) return idx
+  }
+  for (let i = 0; i < CATEGORY_PILL_ORDER.length; i++) {
+    if (FILTER_CONFIG[CATEGORY_PILL_ORDER[i]].slots.includes(item.slot)) {
+      return i
+    }
+  }
+  return CATEGORY_PILL_ORDER.length // unknown / falls to the end
 }
 
 const sortItems = (items: ShopItem[], sort: SortOption): ShopItem[] => {
@@ -224,6 +273,14 @@ const sortItems = (items: ShopItem[], sort: SortOption): ShopItem[] => {
       return sorted.sort((a, b) => a.name.localeCompare(b.name))
     case 'name-desc':
       return sorted.sort((a, b) => b.name.localeCompare(a.name))
+    case 'category':
+      return sorted.sort((a, b) => {
+        const ra = getCategoryRank(a)
+        const rb = getCategoryRank(b)
+        if (ra !== rb) return ra - rb
+        // Within a category, fall back to the default curated order
+        return (ITEM_ORDER[a.id] ?? 99) - (ITEM_ORDER[b.id] ?? 99)
+      })
     case 'default':
     default:
       return sorted.sort(
@@ -237,9 +294,19 @@ export default function ShopPage() {
   const isAdminOrMod = useAdminOrMod()
   const optimisticContext = useOptimisticEntitlements()
 
-  const { data: charityData } = useAPIGetter('get-charity-giveaway', {
-    userId: user?.id,
-  })
+  // Mark /shop as visited so the NEW badge on the sidebar + per-card stickers
+  // clear for this user. Fire-and-forget; next visit retries on failure.
+  useEffect(() => {
+    if (!user) return
+    api('me/update', { lastShopVisitTime: Date.now() }).catch(() => {})
+  }, [user?.id])
+
+  const { data: charityData, refresh: refreshCharityData } = useAPIGetter(
+    'get-charity-giveaway',
+    {
+      userId: user?.id,
+    }
+  )
   const charityGiveawayData = charityData as CharityGiveawayData | undefined
   const isCharityLoading = charityData === undefined
 
@@ -311,6 +378,29 @@ export default function ShopPage() {
       .filter((e) => isEntitlementOwned(e))
       .map((e) => e.entitlementId)
   )
+
+  // "NEW to user" predicate. Falls back to createdTime so fresh signups don't
+  // see every historically-added item flagged. Suppresses NEW for items the
+  // user already owns (nothing "new to discover" there).
+  //
+  // lastShopVisit is snapshotted via useMemo([user?.id]) so that the value
+  // stays stable for the duration of the page visit — otherwise the WebSocket
+  // update triggered by our own me/update call below would collapse the NEW
+  // section mid-view, and stickers would vanish while the user is still
+  // looking. The snapshot only refreshes on login/logout.
+  //
+  // DO NOT add user.lastShopVisitTime or user.createdTime to the deps list —
+  // the eslint-auto-fix would reintroduce the mid-view collapse bug.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const lastShopVisit = useMemo(
+    () => user?.lastShopVisitTime ?? user?.createdTime ?? 0,
+    [user?.id]
+  )
+  const isItemNewToUser = (item: ShopItem): boolean =>
+    !!user && // logged-out visitors never see NEW (matches the sidebar badge)
+    !!item.visibleSinceTime &&
+    item.visibleSinceTime > lastShopVisit &&
+    !ownedItemIds.has(getEntitlementId(item))
 
   // Set of item IDs that are visible in the shop (for dynamic filter tab visibility)
   const visibleShopItemIds = new Set(
@@ -531,6 +621,85 @@ export default function ShopPage() {
   // Get current toggle version for passing to API calls
   const getToggleVersion = () => toggleVersionRef.current
 
+  // Filtered + sorted regular shop items (excludes tickets/merch/supporter).
+  // Computed once so we can split into the NEW section and the main grid.
+  const sortedRegularItems =
+    filterOption === 'ticket' || filterOption === 'merch'
+      ? []
+      : sortItems(
+          filterItems(
+            SHOP_ITEMS.filter(
+              (item) =>
+                !SUPPORTER_ENTITLEMENT_IDS.includes(
+                  item.id as (typeof SUPPORTER_ENTITLEMENT_IDS)[number]
+                ) &&
+                item.category !== 'merch' &&
+                item.category !== 'ticket' &&
+                (!item.hidden ||
+                  showHidden ||
+                  ownedItemIds.has(getEntitlementId(item)) ||
+                  (item.seasonalAvailability &&
+                    isSeasonalItemAvailable(item)))
+            ),
+            filterOption
+          ),
+          sortOption
+        )
+
+  // On the 'all' filter, pull NEW-to-user items out into a dedicated section
+  // above the main grid. On narrower filters, NEW items stay in place and
+  // get the per-card sticker only.
+  const newRegularItems =
+    filterOption === 'all'
+      ? sortedRegularItems.filter(isItemNewToUser)
+      : []
+  const mainRegularItems =
+    filterOption === 'all'
+      ? sortedRegularItems.filter((i) => !isItemNewToUser(i))
+      : sortedRegularItems
+
+  // Shared render so the NEW section + main grid handle items identically,
+  // including the charity-champion-trophy special case.
+  const renderShopItem = (item: ShopItem) => {
+    if (item.id === 'charity-champion-trophy') {
+      return (
+        <CharityChampionCard
+          key={item.id}
+          data={charityGiveawayData}
+          isLoading={isCharityLoading}
+          user={user}
+          entitlements={effectiveEntitlements}
+          isNew={isItemNewToUser(item)}
+          onEntitlementsChange={(newEntitlements) => {
+            setLocalEntitlements(newEntitlements)
+            refreshCharityData()
+          }}
+        />
+      )
+    }
+    const entitlementId = getEntitlementId(item)
+    const entitlement = effectiveEntitlements.find(
+      (e) => e.entitlementId === entitlementId && isEntitlementOwned(e)
+    )
+    return (
+      <ShopItemCard
+        key={item.id}
+        item={item}
+        user={user}
+        owned={ownedItemIds.has(entitlementId)}
+        entitlement={entitlement}
+        allEntitlements={effectiveEntitlements}
+        justPurchased={justPurchased === item.id}
+        isNew={isItemNewToUser(item)}
+        onPurchaseComplete={handlePurchaseComplete}
+        onToggleComplete={handleToggleComplete}
+        onMetadataChange={handleMetadataChange}
+        getToggleVersion={getToggleVersion}
+        localStreakBonus={localStreakBonus}
+      />
+    )
+  }
+
   return (
     <Page trackPageView="shop page" className="!col-span-7">
       <SEO
@@ -551,7 +720,7 @@ export default function ShopPage() {
           <FaGem className="h-6 w-6 text-violet-500" />
           Mana Shop
         </Row>
-        {user && (
+        {user ? (
           <Row className="text-ink-700 mb-6 items-center gap-4 text-sm">
             <span>
               Your balance:{' '}
@@ -565,6 +734,12 @@ export default function ShopPage() {
             >
               Buy mana →
             </Link>
+          </Row>
+        ) : (
+          // Skeleton placeholder so the page doesn't shift when the user loads
+          <Row className="mb-6 animate-pulse items-center gap-4">
+            <div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700" />
           </Row>
         )}
 
@@ -593,6 +768,7 @@ export default function ShopPage() {
             className="bg-canvas-0 border-ink-300 text-ink-700 rounded-md border px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="default">Default order</option>
+            <option value="category">Category</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
             <option value="name-asc">Name: A to Z</option>
@@ -635,6 +811,19 @@ export default function ShopPage() {
           })}
         </Row>
 
+        {/* NEW section — only on the 'all' filter, when user has unseen items */}
+        {filterOption === 'all' && newRegularItems.length > 0 && (
+          <>
+            <Row className="mb-4 mt-2 items-center gap-2">
+              <NewBadge variant="inline" />
+              <span className="text-lg font-semibold">Just added</span>
+            </Row>
+            <div className="mb-2 grid grid-cols-1 gap-4 pt-3 min-[480px]:grid-cols-2 lg:grid-cols-3">
+              {newRegularItems.map(renderShopItem)}
+            </div>
+          </>
+        )}
+
         {/* Tickets + shop items — hidden when merch filter is active */}
         {filterOption !== 'merch' && (
           <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
@@ -651,50 +840,10 @@ export default function ShopPage() {
                   />
                 ))}
 
-            {/* Regular shop items — hidden when ticket filter is active */}
-            {filterOption !== 'ticket' &&
-              sortItems(
-                filterItems(
-                  SHOP_ITEMS.filter(
-                    (item) =>
-                      !SUPPORTER_ENTITLEMENT_IDS.includes(
-                        item.id as (typeof SUPPORTER_ENTITLEMENT_IDS)[number]
-                      ) &&
-                      item.id !== 'charity-champion-trophy' &&
-                      item.category !== 'merch' &&
-                      item.category !== 'ticket' &&
-                      (!item.hidden ||
-                        showHidden ||
-                        ownedItemIds.has(getEntitlementId(item)) ||
-                        (item.seasonalAvailability &&
-                          isSeasonalItemAvailable(item)))
-                  ),
-                  filterOption
-                ),
-                sortOption
-              ).map((item) => {
-                const entitlementId = getEntitlementId(item)
-                const entitlement = effectiveEntitlements.find(
-                  (e) =>
-                    e.entitlementId === entitlementId && isEntitlementOwned(e)
-                )
-                return (
-                  <ShopItemCard
-                    key={item.id}
-                    item={item}
-                    user={user}
-                    owned={ownedItemIds.has(entitlementId)}
-                    entitlement={entitlement}
-                    allEntitlements={effectiveEntitlements}
-                    justPurchased={justPurchased === item.id}
-                    onPurchaseComplete={handlePurchaseComplete}
-                    onToggleComplete={handleToggleComplete}
-                    onMetadataChange={handleMetadataChange}
-                    getToggleVersion={getToggleVersion}
-                    localStreakBonus={localStreakBonus}
-                  />
-                )
-              })}
+            {/* Regular shop items — hidden when ticket filter is active.
+                On 'all' filter, NEW items are already rendered above, so
+                mainRegularItems has them filtered out. */}
+            {filterOption !== 'ticket' && mainRegularItems.map(renderShopItem)}
           </div>
         )}
 
@@ -731,7 +880,13 @@ export default function ShopPage() {
             </>
           )}
 
-        {/* {isAdminOrMod && <AdminTestingTools user={user} showHidden={showHidden} setShowHidden={setShowHidden} />} */}
+        {isAdminOrMod && (
+          <AdminTestingTools
+            user={user}
+            showHidden={showHidden}
+            setShowHidden={setShowHidden}
+          />
+        )}
       </Col>
     </Page>
   )
@@ -1001,21 +1156,36 @@ function TicketItemCard(props: {
 
           {/* Price + CTA */}
           <Col className="mt-auto gap-2">
-            <Row className="items-baseline justify-between">
-              <div className="text-ink-500 text-[10px] uppercase tracking-wider">
-                {comingSoon ? 'Price' : 'Your cost'}
-              </div>
-              <Row className="items-baseline gap-2">
-                {hasDiscount && (
-                  <span className="text-ink-500 text-sm line-through opacity-70">
-                    {formatMoney(item.price)}
-                  </span>
+            <Col className="gap-1">
+              <Row className="items-baseline justify-between gap-2">
+                <div className="text-ink-500 text-[10px] uppercase tracking-wider">
+                  {comingSoon ? 'Price' : 'Your cost'}
+                </div>
+                {hasDiscount ? (
+                  <Row className="items-center gap-1.5">
+                    <span className="text-ink-500 text-sm line-through opacity-70">
+                      {formatMoney(item.price)}
+                    </span>
+                    <span className="rounded bg-green-100 px-1 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-900/50 dark:text-green-300">
+                      -
+                      {Math.round(
+                        (1 - discountedPrice / item.price) * 100
+                      )}
+                      %
+                    </span>
+                  </Row>
+                ) : (
+                  <div className="text-ink-900 text-xl font-bold">
+                    {formatMoney(discountedPrice)}
+                  </div>
                 )}
-                <div className="text-ink-900 text-xl font-bold">
+              </Row>
+              {hasDiscount && (
+                <div className="text-ink-900 text-right text-xl font-bold">
                   {formatMoney(discountedPrice)}
                 </div>
-              </Row>
-            </Row>
+              )}
+            </Col>
             <Button
               color={comingSoon ? 'gray' : 'amber'}
               size="sm"
@@ -1117,8 +1287,16 @@ function TicketItemCard(props: {
                     ticket must match your Manifold email.
                   </li>
                   <li>
-                    Apply it at checkout on the Manifest ticket page for 100%
-                    off.
+                    Apply it at checkout on the{' '}
+                    <a
+                      href="https://manifest.is/#tickets"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold underline"
+                    >
+                      Manifest ticket page
+                    </a>{' '}
+                    for 100% off.
                   </li>
                   <li>Save this code now — it will not be shown again.</li>
                 </ul>
@@ -2674,66 +2852,110 @@ function PrizeDrawingCard() {
     return () => clearInterval(interval)
   }, [sweepstakes?.closeTime])
 
-  // Don't render if no sweepstakes data
-  if (!sweepstakes) return null
+  // Loading skeleton — keeps the layout stable until sweepstakes data arrives
+  if (!sweepstakes) {
+    return (
+      <div
+        className={clsx(
+          'overflow-hidden rounded-xl p-1',
+          'bg-gradient-to-br from-gray-300 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700'
+        )}
+      >
+        <div className="animate-pulse rounded-lg bg-white p-4 dark:bg-gray-900">
+          <Row className="mb-3 items-center gap-2">
+            <div className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-5 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+          </Row>
+          <Row className="mb-3 gap-4">
+            <div className="h-12 flex-1 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-12 flex-1 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-12 flex-1 rounded bg-gray-200 dark:bg-gray-700" />
+          </Row>
+          <div className="mb-3 h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+      </div>
+    )
+  }
 
   const isClosed = sweepstakes.closeTime <= Date.now()
 
+  if (isClosed) {
+    return (
+      <GiveawayPromoCard
+        href="/prize"
+        gradientClassName="from-teal-400 via-cyan-400 to-blue-500"
+        hoverShadowClassName="hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30"
+        icon={<FaGift className="h-5 w-5 text-teal-500" />}
+        title="Prize Drawing"
+        pill={ENDED_PILL}
+        stats={[
+          {
+            value: `$${totalPrizePool.toLocaleString()}`,
+            label: 'Prize Pool',
+            valueClassName: clsx(
+              'font-bold text-teal-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+          {
+            value: formatEntries(totalTickets),
+            label: 'Entries',
+            valueClassName: clsx(
+              'font-bold text-blue-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+        ]}
+        message="Drawing has ended. Winner will be announced soon!"
+        ctaText="View Results →"
+        ctaColor="indigo"
+      />
+    )
+  }
+
   return (
-    <Link href="/prize" className="block h-full">
-      <div
-        className={clsx(
-          'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
-          'bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-500',
-          'hover:shadow-lg hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30',
-          'hover:-translate-y-1'
-        )}
-      >
-        <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
-          {/* Header */}
-          <Row className="mb-3 items-center gap-2">
-            <FaGift className="h-5 w-5 text-teal-500" />
-            <span className="text-lg font-semibold">Prize Drawing</span>
-            {!isClosed && (
-              <span className="ml-auto rounded bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700 dark:bg-teal-500 dark:text-white">
-                LIVE
-              </span>
-            )}
-          </Row>
-
-          {/* Stats row */}
-          <Row className="mb-3 gap-4 text-center">
-            <Col className="flex-1">
-              <div className="text-2xl font-bold text-teal-600">
-                ${totalPrizePool.toLocaleString()}
-              </div>
-              <div className="text-ink-500 text-xs">Prize Pool</div>
-            </Col>
-            <Col className="flex-1">
-              <div className="text-2xl font-bold text-cyan-600">
-                {timeRemaining || '...'}
-              </div>
-              <div className="text-ink-500 text-xs">Time Left</div>
-            </Col>
-            <Col className="flex-1">
-              <div className="text-2xl font-bold text-blue-600">
-                {Math.floor(totalTickets).toLocaleString()}
-              </div>
-              <div className="text-ink-500 text-xs">Entries</div>
-            </Col>
-          </Row>
-
-          {/* CTA */}
-          <Button
-            color="indigo"
-            size="sm"
-            className="mt-auto w-full group-hover:shadow-md"
-          >
-            Enter Drawing →
-          </Button>
-        </div>
-      </div>
-    </Link>
+    <GiveawayPromoCard
+      href="/prize"
+      gradientClassName="from-teal-400 via-cyan-400 to-blue-500"
+      hoverShadowClassName="hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30"
+      icon={<FaGift className="h-5 w-5 text-teal-500" />}
+      title="Prize Drawing"
+      pill={{
+        text: 'LIVE',
+        className:
+          'bg-teal-100 text-teal-700 dark:bg-teal-500 dark:text-white',
+      }}
+      stats={[
+        {
+          value: `$${totalPrizePool.toLocaleString()}`,
+          label: 'Prize Pool',
+          valueClassName: clsx(
+            'font-bold text-teal-600',
+            promoStatSizeClass(totalTickets, true)
+          ),
+        },
+        {
+          value: timeRemaining || '...',
+          label: 'Time Left',
+          valueClassName: clsx(
+            'font-bold text-cyan-600',
+            promoStatSizeClass(totalTickets, true)
+          ),
+          extraClassName: 'whitespace-nowrap',
+        },
+        {
+          value: formatEntries(totalTickets),
+          label: 'Entries',
+          valueClassName: clsx(
+            'font-bold text-blue-600',
+            promoStatSizeClass(totalTickets, true)
+          ),
+        },
+      ]}
+      ctaText="Enter Drawing →"
+      ctaColor="indigo"
+    />
   )
 }
 
@@ -3115,15 +3337,7 @@ function DisguisePreview(props: { user: User | null | undefined }) {
           size="lg"
           noLink
         />
-        <DisguiseSvg
-          className="absolute left-1/2 -translate-x-1/2"
-          style={{
-            top: 8,
-            width: 28,
-            height: 20,
-            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-          }}
-        />
+        <DisguiseOnAvatar size="lg" />
       </div>
     </div>
   )
@@ -3664,11 +3878,10 @@ function BearEarsPreview(props: { user: User | null | undefined }) {
         />
         {/* Left ear */}
         <BearEarSvg
-          side="left"
-          className="absolute transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110"
+          className="absolute origin-bottom rotate-[-25deg] transition-transform duration-300 group-hover:rotate-[-20deg]"
           style={{
-            left: -4,
-            top: -7,
+            left: -1,
+            top: -2,
             width: 18,
             height: 18,
             filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
@@ -3676,11 +3889,10 @@ function BearEarsPreview(props: { user: User | null | undefined }) {
         />
         {/* Right ear */}
         <BearEarSvg
-          side="right"
-          className="absolute transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110"
+          className="absolute origin-bottom -scale-x-100 rotate-[25deg] transition-transform duration-300 group-hover:rotate-[20deg]"
           style={{
-            right: -4,
-            top: -7,
+            right: -1,
+            top: -2,
             width: 18,
             height: 18,
             filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
@@ -3762,43 +3974,129 @@ function BunnyEarsPreview(props: { user: User | null | undefined }) {
   )
 }
 
-function CatEarsPreview(props: { user: User | null | undefined }) {
-  const { user } = props
+const CAT_EARS_STYLE_COUNT = 2
+const CAT_EARS_STYLE_LABELS = ['Ears', 'Ears + Whiskers']
+
+function CatEarsStylePreview(props: {
+  user: User | null | undefined
+  selectedStyle?: number
+  onSelect?: (style: number) => void
+  owned?: boolean
+}) {
+  const { user, selectedStyle = 0, onSelect, owned } = props
+  const [previewIndex, setPreviewIndex] = useState(
+    Math.max(0, Math.min(selectedStyle, CAT_EARS_STYLE_COUNT - 1))
+  )
+
+  const cyclePrev = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newIndex =
+      (previewIndex - 1 + CAT_EARS_STYLE_COUNT) % CAT_EARS_STYLE_COUNT
+    setPreviewIndex(newIndex)
+    if (owned && onSelect) onSelect(newIndex)
+  }
+  const cycleNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newIndex = (previewIndex + 1) % CAT_EARS_STYLE_COUNT
+    setPreviewIndex(newIndex)
+    if (owned && onSelect) onSelect(newIndex)
+  }
+
+  const showWhiskers = previewIndex === 1
 
   return (
-    <div className="bg-canvas-50 flex items-center justify-center rounded-lg p-4 transition-colors duration-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50">
-      <div className="relative">
-        <Avatar
-          username={user?.username}
-          avatarUrl={user?.avatarUrl}
-          size="lg"
-          noLink
-        />
-        {/* Left ear */}
-        <CatEarSvg
-          className="absolute transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:rotate-[-3deg]"
-          style={{
-            left: -2,
-            top: -9,
-            width: 22,
-            height: 16,
-            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
-            transform: 'rotate(-12deg)',
-          }}
-        />
-        {/* Right ear (mirrored) */}
-        <CatEarSvg
-          className="absolute transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:rotate-[3deg]"
-          style={{
-            right: -2,
-            top: -9,
-            width: 22,
-            height: 16,
-            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
-            transform: 'rotate(12deg) scaleX(-1)',
-          }}
-        />
-      </div>
+    <div className="bg-canvas-50 flex flex-col items-center justify-center gap-2 rounded-lg p-4 transition-colors duration-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50">
+      <Row className="w-full items-center">
+        <button
+          onClick={cyclePrev}
+          className="text-ink-400 hover:text-ink-600 flex flex-1 items-center justify-start py-2 pl-1"
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+        </button>
+        <div className="relative">
+          <Avatar
+            username={user?.username}
+            avatarUrl={user?.avatarUrl}
+            size="lg"
+            noLink
+          />
+          {showWhiskers && (
+            <>
+              {/* Light mode whiskers */}
+              <CatWhiskersSvg
+                className="absolute top-1/2 dark:hidden"
+                style={{
+                  left: -7,
+                  width: 14,
+                  height: 7,
+                  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
+                  transform: 'translateY(-50%) scaleX(-1)',
+                }}
+              />
+              <CatWhiskersSvg
+                className="absolute top-1/2 dark:hidden"
+                style={{
+                  right: -7,
+                  width: 14,
+                  height: 7,
+                  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25))',
+                  transform: 'translateY(-50%)',
+                }}
+              />
+              {/* Dark mode whiskers — subtle white glow */}
+              <CatWhiskersSvg
+                className="absolute top-1/2 hidden dark:block"
+                style={{
+                  left: -7,
+                  width: 14,
+                  height: 7,
+                  filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.7))',
+                  transform: 'translateY(-50%) scaleX(-1)',
+                }}
+              />
+              <CatWhiskersSvg
+                className="absolute top-1/2 hidden dark:block"
+                style={{
+                  right: -7,
+                  width: 14,
+                  height: 7,
+                  filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.7))',
+                  transform: 'translateY(-50%)',
+                }}
+              />
+            </>
+          )}
+          <CatEarSvg
+            className="absolute origin-bottom rotate-[-52deg] transition-transform duration-300 group-hover:rotate-[-44deg]"
+            style={{
+              left: -5,
+              top: -2,
+              width: 24,
+              height: 14,
+              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))',
+            }}
+          />
+          <CatEarSvg
+            className="absolute origin-bottom -scale-x-100 rotate-[52deg] transition-transform duration-300 group-hover:rotate-[44deg]"
+            style={{
+              right: -5,
+              top: -2,
+              width: 24,
+              height: 14,
+              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))',
+            }}
+          />
+        </div>
+        <button
+          onClick={cycleNext}
+          className="text-ink-400 hover:text-ink-600 flex flex-1 items-center justify-end py-2 pr-1"
+        >
+          <ChevronRightIcon className="h-4 w-4" />
+        </button>
+      </Row>
+      <span className="text-ink-500 text-xs">
+        {CAT_EARS_STYLE_LABELS[previewIndex]}
+      </span>
     </div>
   )
 }
@@ -3943,70 +4241,7 @@ function HatPreview(props: {
       case 'halo':
         return (
           <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-0.5">
-            {/* Light mode — dual-stroke SVG matching live avatar halo */}
-            <svg
-              className="dark:hidden"
-              width="3.3rem"
-              height="0.85rem"
-              viewBox="0 0 40 12"
-              overflow="visible"
-              style={{
-                transform: 'rotate(-8deg)',
-                filter:
-                  'drop-shadow(0 0 3px rgba(245, 200, 80, 0.5)) drop-shadow(0 0 1px rgba(217, 170, 50, 0.6))',
-              }}
-            >
-              <ellipse
-                cx="20"
-                cy="6"
-                rx="18"
-                ry="5"
-                stroke="rgba(217, 170, 50, 0.7)"
-                strokeWidth="3.5"
-                fill="none"
-              />
-              <ellipse
-                cx="20"
-                cy="6"
-                rx="18"
-                ry="5"
-                stroke="rgba(255, 252, 240, 0.95)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
-            {/* Dark mode — dual-stroke SVG matching live avatar halo */}
-            <svg
-              className="hidden dark:block"
-              width="3.3rem"
-              height="0.85rem"
-              viewBox="0 0 40 12"
-              overflow="visible"
-              style={{
-                transform: 'rotate(-8deg)',
-                filter:
-                  'drop-shadow(0 0 3px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 6px rgba(255, 255, 200, 0.4))',
-              }}
-            >
-              <ellipse
-                cx="20"
-                cy="6"
-                rx="18"
-                ry="5"
-                stroke="rgba(200, 160, 60, 0.5)"
-                strokeWidth="3.5"
-                fill="none"
-              />
-              <ellipse
-                cx="20"
-                cy="6"
-                rx="18"
-                ry="5"
-                stroke="rgba(255, 252, 240, 0.95)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
+            <HaloSvg width="3.3rem" height="0.85rem" />
           </div>
         )
       case 'propeller-hat':
@@ -5091,7 +5326,18 @@ function ItemPreview(props: {
     case 'avatar-bunny-ears':
       return <BunnyEarsPreview user={user} />
     case 'avatar-cat-ears':
-      return <CatEarsPreview user={user} />
+      return (
+        <CatEarsStylePreview
+          user={user}
+          selectedStyle={(entitlement?.metadata?.style as number) ?? 0}
+          owned={!!entitlement}
+          onSelect={
+            onMetadataUpdate
+              ? (style) => onMetadataUpdate({ style })
+              : undefined
+          }
+        />
+      )
     case 'streak-forgiveness':
       return (
         <StreakFreezePreview
@@ -5160,6 +5406,7 @@ function ShopItemCard(props: {
   entitlement?: UserEntitlement
   allEntitlements?: UserEntitlement[]
   justPurchased?: boolean
+  isNew?: boolean
   onPurchaseComplete: (itemId: string, entitlements?: UserEntitlement[]) => void
   onToggleComplete: (
     itemId: string,
@@ -5184,6 +5431,7 @@ function ShopItemCard(props: {
     entitlement,
     allEntitlements,
     justPurchased,
+    isNew,
     onPurchaseComplete,
     onToggleComplete,
     onMetadataChange,
@@ -5326,6 +5574,9 @@ function ShopItemCard(props: {
               'dark:to-yellow-900/15 bg-gradient-to-br from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20'
           )}
         >
+          {/* NEW sticker — overflows the card's clipping */}
+          {isNew && <NewBadge variant="sticker" />}
+
           {/* Loading overlay during purchase */}
           {purchasing && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/80 dark:bg-gray-900/80">
@@ -5336,52 +5587,56 @@ function ShopItemCard(props: {
             </div>
           )}
 
-          {item.hidden &&
-            !(item.seasonalAvailability && isSeasonalItemAvailable(item)) && (
-              <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
-                Hidden
-              </div>
-            )}
-
-          {/* Card header with badge inline */}
-          <Row className="items-start justify-between gap-2">
+          {/* Card header — title takes remaining space; badges wrap when crowded */}
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
             <div
               className={clsx(
-                'text-base font-semibold sm:text-lg',
+                'min-w-0 flex-1 text-base font-semibold sm:text-lg',
                 isPremiumItem && 'text-amber-700 dark:text-amber-400'
               )}
             >
               {item.name}
             </div>
-            {/* OWNED badge for purchased items */}
-            {owned && (
-              <div
-                className={clsx(
-                  'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:text-xs',
-                  isPremiumItem
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                    : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
-                )}
-              >
-                OWNED
-              </div>
-            )}
-            {/* LEGENDARY badge for halo, wings, crown only */}
-            {['avatar-halo', 'avatar-angel-wings', 'avatar-crown'].includes(
-              item.id
-            ) &&
-              !owned && (
-                <div className="shrink-0 rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm sm:px-2 sm:text-xs">
-                  LEGENDARY
+            <div className="flex flex-wrap items-start justify-end gap-1">
+              {/* OWNED badge for purchased items */}
+              {owned && (
+                <div
+                  className={clsx(
+                    'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:text-xs',
+                    isPremiumItem
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                      : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
+                  )}
+                >
+                  OWNED
                 </div>
               )}
-            {/* SEASONAL badge */}
-            {item.seasonalAvailability && (
-              <div className="shrink-0 rounded bg-gradient-to-r from-pink-500 to-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm sm:px-2 sm:text-xs">
-                SEASONAL
-              </div>
-            )}
-          </Row>
+              {/* LEGENDARY badge for halo, wings, crown only */}
+              {['avatar-halo', 'avatar-angel-wings', 'avatar-crown'].includes(
+                item.id
+              ) &&
+                !owned && (
+                  <div className="shrink-0 rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm sm:px-2 sm:text-xs">
+                    LEGENDARY
+                  </div>
+                )}
+              {/* SEASONAL badge */}
+              {item.seasonalAvailability && (
+                <div className="shrink-0 rounded bg-gradient-to-r from-pink-500 to-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm sm:px-2 sm:text-xs">
+                  SEASONAL
+                </div>
+              )}
+              {/* Hidden badge — inline so it doesn't overlap the others */}
+              {item.hidden &&
+                !(
+                  item.seasonalAvailability && isSeasonalItemAvailable(item)
+                ) && (
+                  <div className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 sm:px-2 sm:text-xs dark:bg-amber-900/50 dark:text-amber-400">
+                    Hidden
+                  </div>
+                )}
+            </div>
+          </div>
 
           {/* Slot tag */}
           {EXCLUSIVE_SLOTS.includes(item.slot) && (
@@ -5548,10 +5803,10 @@ function ShopItemCard(props: {
             // Non-owned item layout - stacks vertically on very narrow screens
             <>
               <Col className="mt-auto gap-2 pt-2">
-                <Row className="items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   {hasDiscount || item.originalPrice ? (
-                    <Col className="gap-0.5">
-                      <Row className="items-center gap-1.5">
+                    <Col className="min-w-0 gap-0.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span className="text-ink-400 text-xs line-through">
                           {formatMoney(item.originalPrice ?? item.price)}
                         </span>
@@ -5572,7 +5827,7 @@ function ShopItemCard(props: {
                             %
                           </span>
                         )}
-                      </Row>
+                      </div>
                       <div className="font-semibold text-teal-600">
                         {formatMoney(discountedPrice)}
                       </div>
@@ -5610,7 +5865,7 @@ function ShopItemCard(props: {
                       </Button>
                     )}
                   </div>
-                </Row>
+                </div>
 
                 {/* Full-width button on narrow screens */}
                 <div className="min-[480px]:hidden">

@@ -113,11 +113,22 @@ export const getEntitlementIdsForCategory = (
   )
 }
 
+// Filter-pill category an item should appear under, overriding slot-based
+// categorization. Applies only to the 5 standard pills (not all/merch/ticket/seasonal).
+export type ShopItemFilterCategory =
+  | 'hats'
+  | 'avatar'
+  | 'hovercard'
+  | 'buttons'
+  | 'other'
+
 // Achievement requirement types
 export type AchievementRequirementType =
   | 'streak' // currentBettingStreak
   | 'profit' // total profit
   | 'loss' // total loss (absolute value)
+  | 'yesProfit' // profit from contracts where user was net-long YES
+  | 'noProfit' // profit from contracts where user was net-long NO
   | 'volume' // total trading volume
   | 'donations' // $ donated to charity
   | 'referrals' // number of referrals
@@ -178,6 +189,13 @@ export type ShopItem = {
   maxStock?: number
   // If true, item is shown in UI but not purchasable (for "coming soon" states)
   comingSoon?: boolean
+  // Timestamp when this item became user-visible. Drives the "NEW" badge.
+  // Set on add or when unhiding an item; leave undefined to skip the badge.
+  visibleSinceTime?: number
+  // Force the item into a specific filter-pill category, overriding the
+  // default slot-based mapping (e.g. 'unique'-slot items that should appear
+  // under Hats or Avatar instead of Hovercard).
+  filterOverride?: ShopItemFilterCategory
   // Merch-specific fields
   variants?: MerchVariant[]
   // Image carousel for merch cards: [{label, url}, ...]
@@ -246,6 +264,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'unique', // Combines with everything
+    filterOverride: 'hats',
   },
   {
     id: 'avatar-graduation-cap',
@@ -332,14 +351,14 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'hovercard-oracle',
-    hidden: true,
     name: 'Starfield Background',
     description: 'A mystical starfield background with twinkling stars',
-    price: 100000,
+    price: 6500,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'hovercard',
     slot: 'hovercard-background',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   {
     id: 'hovercard-trading-floor',
@@ -384,14 +403,15 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'avatar-halo',
-    hidden: true,
     name: 'Halo',
     description: 'A golden halo for the most virtuous forecasters',
-    price: 150000,
+    price: 100000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'unique',
+    filterOverride: 'hats',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   {
     id: 'avatar-propeller-hat',
@@ -460,25 +480,26 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'avatar-devil-horns',
-    hidden: true,
     name: 'Devil Horns',
     description: 'Devilish horns for the market manipulator',
-    price: 100000,
+    price: 45000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'hat',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   {
     id: 'avatar-angel-wings',
-    hidden: true,
     name: 'Angel Wings',
     description: 'Feathered wings flanking your avatar',
-    price: 100000,
+    price: 65000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-border',
     slot: 'unique', // Combines with everything
+    filterOverride: 'avatar',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   {
     id: 'avatar-mana-aura',
@@ -520,14 +541,14 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'avatar-bad-aura',
-    hidden: true,
-    name: 'Bad Aura',
+    name: 'Evil Aura',
     description: 'A menacing crimson glow around your avatar',
     price: 25000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-border',
     slot: 'profile-border',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   // Avatar Accessories
   {
@@ -644,7 +665,6 @@ export const SHOP_ITEMS: ShopItem[] = [
   // Blue cap — MANA branded cap in blue with style variants
   {
     id: 'avatar-blue-cap',
-    hidden: true,
     name: 'Blue Cap',
     description: 'A sleek blue MANA cap with dark stitch accents',
     price: 2500,
@@ -656,7 +676,6 @@ export const SHOP_ITEMS: ShopItem[] = [
   // Team items - mutually exclusive (can only equip one team's items)
   {
     id: 'avatar-team-red-hat',
-    hidden: true,
     name: 'Red Cap',
     description: 'Show your allegiance to Team Red',
     price: 2500,
@@ -667,6 +686,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'avatar-team-green-hat',
+    hidden: true,
     name: 'Green Cap',
     description: 'Show your allegiance to Team Green',
     price: 2500,
@@ -677,6 +697,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 'avatar-black-cap',
+    hidden: true,
     name: 'Black Cap',
     description: 'A sleek black MANA cap with panel seams',
     price: 2500,
@@ -690,44 +711,45 @@ export const SHOP_ITEMS: ShopItem[] = [
     id: 'avatar-bull-horns',
     hidden: true,
     name: 'Bull Horns',
-    description: 'Mighty bull horns for the profitable trader',
+    description: 'Mighty horns for the bullish trader who profits going long YES',
     price: 100000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'hat',
     requirement: {
-      type: 'profit',
+      type: 'yesProfit',
       threshold: 100000,
-      description: 'Earn M$100k in total profit',
+      description: 'Earn M$100k profit on YES-side positions',
     },
   },
   {
     id: 'avatar-bear-ears',
     hidden: true,
     name: 'Bear Ears',
-    description: 'Fluffy bear ears for the seasoned trader who has weathered losses',
+    description: 'Fluffy ears for the bearish trader who profits going short NO',
     price: 100000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'hat',
     requirement: {
-      type: 'loss',
+      type: 'noProfit',
       threshold: 100000,
-      description: 'Lose M$100k in total (a badge of experience)',
+      description: 'Earn M$100k profit on NO-side positions',
     },
   },
   {
     id: 'avatar-cat-ears',
-    hidden: true,
     name: 'Cat Ears',
-    description: 'Cute pointed cat ears for the curious trader',
+    description:
+      'Cute cat ears - dynamic light/dark mode style. Toggle whiskers from the style picker',
     price: 30000,
     type: 'permanent-toggleable',
     limit: 'one-time',
     category: 'avatar-overlay',
     slot: 'hat',
+    visibleSinceTime: new Date('2026-04-20T19:00:00+09:30').getTime(),
   },
   // Seasonal items - only available during their season
   {
@@ -1131,60 +1153,40 @@ export const userHasCrown = (
   return hasActiveEntitlement(entitlements, 'avatar-crown')
 }
 
-// Get the active avatar overlay (hat) if any
-// Note: This excludes halo and crown since they're unique slot items that combine with other hats
-// Use userHasHalo() and userHasCrown() separately to check for those
+// Item IDs that share a slot but are rendered via dedicated code paths and
+// therefore shouldn't appear in the generic overlay/accessory iteration.
+// Halo and crown render as unique slot items (not 'hat') so they're naturally
+// excluded. Fire item has slot 'profile-accessory' but is rendered by its own
+// `hasFireItem` check, not by `AvatarAccessory`.
+const SPECIAL_RENDERED_DECORATIONS = new Set<string>(['avatar-fire-item'])
+
+/** IDs of items that can occupy the given slot, in catalog order. Filtered
+ *  through SPECIAL_RENDERED_DECORATIONS so items with dedicated rendering
+ *  paths don't accidentally short-circuit the generic render switch. */
+const getDecorationIdsForSlot = (slot: ShopItemSlot): AvatarDecorationId[] =>
+  SHOP_ITEMS.filter(
+    (item) =>
+      item.slot === slot && !SPECIAL_RENDERED_DECORATIONS.has(item.id)
+  ).map((item) => item.id as AvatarDecorationId)
+
+// Get the active avatar overlay (hat) if any.
+// Halo and crown live in the 'unique' slot, not 'hat', so they're excluded
+// automatically — use userHasHalo() / userHasCrown() for those.
 export const getActiveAvatarOverlay = (
   entitlements: UserEntitlement[] | undefined
 ): AvatarDecorationId | null => {
-  const overlays: AvatarDecorationId[] = [
-    // Note: crown excluded here - check separately with userHasCrown()
-    'avatar-graduation-cap',
-    'avatar-top-hat',
-    // Note: halo excluded here - check separately with userHasHalo()
-    'avatar-propeller-hat',
-    'avatar-wizard-hat',
-    'avatar-tinfoil-hat',
-    'avatar-microphone',
-    'avatar-jester-hat',
-    'avatar-fedora',
-    'avatar-devil-horns',
-    'avatar-blue-cap',
-    'avatar-team-red-hat',
-    'avatar-team-green-hat',
-    'avatar-black-cap',
-    'avatar-bull-horns',
-    'avatar-bear-ears',
-    'avatar-cat-ears',
-    'avatar-santa-hat',
-    'avatar-bunny-ears',
-  ]
-  for (const overlay of overlays) {
-    if (hasActiveEntitlement(entitlements, overlay)) {
-      return overlay
-    }
+  for (const overlay of getDecorationIdsForSlot('hat')) {
+    if (hasActiveEntitlement(entitlements, overlay)) return overlay
   }
   return null
 }
 
-// Get the active avatar accessory if any
+// Get the active avatar accessory if any.
 export const getActiveAvatarAccessory = (
   entitlements: UserEntitlement[] | undefined
 ): AvatarDecorationId | null => {
-  const accessories: AvatarDecorationId[] = [
-    'avatar-monocle',
-    'avatar-crystal-ball',
-    'avatar-disguise',
-    'avatar-thought-yes',
-    'avatar-thought-no',
-    'avatar-stonks-up',
-    'avatar-stonks-down',
-    'avatar-stonks-meme',
-  ]
-  for (const accessory of accessories) {
-    if (hasActiveEntitlement(entitlements, accessory)) {
-      return accessory
-    }
+  for (const accessory of getDecorationIdsForSlot('profile-accessory')) {
+    if (hasActiveEntitlement(entitlements, accessory)) return accessory
   }
   return null
 }

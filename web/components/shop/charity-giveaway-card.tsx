@@ -1,22 +1,22 @@
 import clsx from 'clsx'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { FaHeart, FaGift } from 'react-icons/fa6'
 import { User } from 'common/user'
 import { useAPIGetter } from 'web/hooks/use-api-getter'
 import { Col } from '../layout/col'
 import { Row } from '../layout/row'
-import { Button } from '../buttons/button'
 import { charities } from 'common/charity'
+import {
+  ENDED_PILL,
+  GiveawayPromoCard,
+  promoStatSizeClass,
+} from './giveaway-promo-card'
 
-function formatEntries(entries: number): string {
-  if (entries >= 1000) {
-    return entries.toLocaleString(undefined, { maximumFractionDigits: 1 })
-  } else if (entries >= 1) {
-    return entries.toLocaleString(undefined, { maximumFractionDigits: 2 })
-  } else {
-    return entries.toLocaleString(undefined, { maximumFractionDigits: 4 })
-  }
+// Shared entry formatter: always whole-number entries for a cleaner display.
+// Sub-1 counts still round to 0 (they shouldn't appear in prod since partial
+// entries are contract-level, not user-facing in these summary tiles).
+export function formatEntries(entries: number): string {
+  return Math.round(entries).toLocaleString()
 }
 
 // Export the data type for use by other components
@@ -176,168 +176,127 @@ export function CharityGiveawayCard(props: {
   // Active giveaway card (still open for tickets)
   if (!hasWinner && !isClosed) {
     return (
-      <Link href="/charity" className={clsx('block h-full', className)}>
-        <div
-          className={clsx(
-            'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
-            'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500',
-            'hover:shadow-lg hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30',
-            'hover:-translate-y-1'
-          )}
-        >
-          {/* Inner card content */}
-          <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
-            {/* Header */}
-            <Row className="mb-3 items-center gap-2">
-              <FaHeart className="h-5 w-5 text-emerald-500" />
-              <span className="text-lg font-semibold">Charity Giveaway</span>
-              <span className="ml-auto rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
-                LIVE
-              </span>
-            </Row>
-
-            {/* Stats row */}
-            <Row className="mb-3 gap-2 text-center">
-              <Col className="flex-1">
-                <div className="text-lg font-bold text-emerald-600 sm:text-xl">
-                  {prizeDisplay}
-                </div>
-                <div className="text-ink-500 text-[10px]">Prize Pool</div>
-              </Col>
-              <Col className="flex-1">
-                <div className="whitespace-nowrap text-lg font-bold text-teal-600 sm:text-xl">
-                  {timeRemaining || '...'}
-                </div>
-                <div className="text-ink-500 text-[10px]">Time Left</div>
-              </Col>
-              <Col className="flex-1">
-                <div className="text-lg font-bold text-cyan-600 sm:text-xl">
-                  {formatEntries(totalTickets)}
-                </div>
-                <div className="text-ink-500 text-[10px]">Entries</div>
-              </Col>
-            </Row>
-
-            {/* CTA */}
-            <Button
-              color="green"
-              size="sm"
-              className="mt-auto w-full group-hover:shadow-md"
-            >
-              View Giveaway →
-            </Button>
-          </div>
-        </div>
-      </Link>
+      <GiveawayPromoCard
+        href="/charity"
+        className={className}
+        gradientClassName="from-emerald-400 via-teal-400 to-cyan-500"
+        hoverShadowClassName="hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30"
+        icon={<FaHeart className="h-5 w-5 text-emerald-500" />}
+        title="Charity Giveaway"
+        pill={{
+          text: 'LIVE',
+          className:
+            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+        }}
+        stats={[
+          {
+            value: prizeDisplay,
+            label: 'Prize Pool',
+            valueClassName: clsx(
+              'font-bold text-emerald-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+          {
+            value: timeRemaining || '...',
+            label: 'Time Left',
+            valueClassName: clsx(
+              'font-bold text-teal-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+            extraClassName: 'whitespace-nowrap',
+          },
+          {
+            value: formatEntries(totalTickets),
+            label: 'Entries',
+            valueClassName: clsx(
+              'font-bold text-cyan-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+        ]}
+        ctaText="View Giveaway →"
+        ctaColor="green"
+      />
     )
   }
 
   // Closed but winner not yet drawn — awaiting draw
   if (!hasWinner && isClosed) {
     return (
-      <Link href="/charity" className={clsx('block h-full', className)}>
-        <div
-          className={clsx(
-            'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
-            'bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400',
-            'hover:shadow-lg hover:shadow-amber-200/50 dark:hover:shadow-amber-900/30',
-            'hover:-translate-y-1'
-          )}
-        >
-          <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
-            {/* Header */}
-            <Row className="mb-3 items-center gap-2">
-              <FaGift className="h-5 w-5 text-amber-500" />
-              <span className="text-lg font-semibold">Charity Giveaway</span>
-              <span className="ml-auto rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-                ENDED
-              </span>
-            </Row>
-
-            {/* Stats */}
-            <Row className="mb-3 gap-2 text-center">
-              <Col className="flex-1">
-                <div className="text-lg font-bold text-amber-600 sm:text-xl">
-                  {prizeDisplay}
-                </div>
-                <div className="text-ink-500 text-[10px]">Prize Pool</div>
-              </Col>
-              <Col className="flex-1">
-                <div className="text-lg font-bold text-amber-600 sm:text-xl">
-                  {formatEntries(totalTickets)}
-                </div>
-                <div className="text-ink-500 text-[10px]">Entries</div>
-              </Col>
-            </Row>
-
-            <p className="text-ink-500 mb-3 text-xs">
-              Giveaway has ended. Winner will be drawn soon!
-            </p>
-
-            {/* CTA */}
-            <Button
-              color="amber"
-              size="sm"
-              className="mt-auto w-full group-hover:shadow-md"
-            >
-              View Results →
-            </Button>
-          </div>
-        </div>
-      </Link>
+      <GiveawayPromoCard
+        href="/charity"
+        className={className}
+        gradientClassName="from-emerald-400 via-teal-400 to-cyan-500"
+        hoverShadowClassName="hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30"
+        icon={<FaGift className="h-5 w-5 text-emerald-500" />}
+        title="Charity Giveaway"
+        pill={ENDED_PILL}
+        stats={[
+          {
+            value: prizeDisplay,
+            label: 'Prize Pool',
+            valueClassName: clsx(
+              'font-bold text-emerald-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+          {
+            value: formatEntries(totalTickets),
+            label: 'Entries',
+            valueClassName: clsx(
+              'font-bold text-cyan-600',
+              promoStatSizeClass(totalTickets, true)
+            ),
+          },
+        ]}
+        message="Giveaway has ended. Winner will be drawn soon!"
+        ctaText="View Results →"
+        ctaColor="green"
+      />
     )
   }
 
-  // Winner selected - show results with leaderboard
+  // Winner selected — uses the same header / 2-stat / message / CTA layout
+  // as the prize-drawing ended card so the two cards align side-by-side. The
+  // charity and winner are moved into the message line.
+  const charityName = winningCharityInfo?.name ?? winningCharity
   return (
-    <Link href="/charity" className={clsx('block h-full', className)}>
-      <div
-        className={clsx(
-          'group relative flex h-full flex-col overflow-hidden rounded-xl p-1 transition-all duration-200',
-          'bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400',
-          'hover:shadow-lg hover:shadow-amber-200/50 dark:hover:shadow-amber-900/30',
-          'hover:-translate-y-1'
-        )}
-      >
-        {/* Inner card content */}
-        <div className="flex h-full flex-col rounded-lg bg-white p-4 dark:bg-gray-900">
-          {/* Header */}
-          <Row className="mb-3 items-center gap-2">
-            <FaHeart className="h-5 w-5 text-amber-500" />
-            <span className="text-lg font-semibold">Charity Giveaway</span>
-            <span className="ml-auto rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-              ENDED
-            </span>
-          </Row>
-
-          {/* Winner info */}
-          <Col className="mb-3">
-            <div className="font-semibold text-amber-600">
-              {winningCharityInfo?.name ?? winningCharity}
-            </div>
-            <Row className="items-baseline gap-2">
-              <div className="text-2xl font-bold text-amber-600">
-                {prizeDisplay}
-              </div>
-              <div className="text-ink-500 text-xs">donated</div>
-            </Row>
-            {winner && (
-              <div className="text-ink-500 mt-1 text-sm">
-                Winning entry by @{winner.username}
-              </div>
-            )}
-          </Col>
-
-          {/* CTA */}
-          <Button
-            color="amber"
-            size="sm"
-            className="mt-auto w-full group-hover:shadow-md"
-          >
-            See Results & Next Giveaway →
-          </Button>
-        </div>
-      </div>
-    </Link>
+    <GiveawayPromoCard
+      href="/charity"
+      className={className}
+      gradientClassName="from-emerald-400 via-teal-400 to-cyan-500"
+      hoverShadowClassName="hover:shadow-teal-200/50 dark:hover:shadow-teal-900/30"
+      icon={<FaHeart className="h-5 w-5 text-emerald-500" />}
+      title="Charity Giveaway"
+      pill={ENDED_PILL}
+      stats={[
+        {
+          value: prizeDisplay,
+          label: 'Donated',
+          valueClassName: clsx(
+            'font-bold text-emerald-600',
+            promoStatSizeClass(totalTickets, true)
+          ),
+        },
+        {
+          value: formatEntries(totalTickets),
+          label: 'Entries',
+          valueClassName: clsx(
+            'font-bold text-cyan-600',
+            promoStatSizeClass(totalTickets, true)
+          ),
+        },
+      ]}
+      message={
+        <>
+          To{' '}
+          <span className="font-semibold text-emerald-600">{charityName}</span>
+          {winner && <> · Won by @{winner.username}</>}
+        </>
+      }
+      ctaText="See Results & Next Giveaway →"
+      ctaColor="green"
+    />
   )
 }
