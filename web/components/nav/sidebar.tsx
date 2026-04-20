@@ -148,10 +148,8 @@ export default function Sidebar(props: {
   // Per-user NEW badge: shows once user data is loaded AND any visible shop
   // item became visible since the user last visited /shop. Default-to-hide
   // while user is loading prevents the badge from flashing in then out.
-  const lastShopVisit =
-    user?.lastShopVisitTime ?? user?.createdTime ?? 0
-  const showShopNewBadge =
-    !!user && NEWEST_SHOP_ITEM_TIME > lastShopVisit
+  const lastShopVisit = user?.lastShopVisitTime ?? user?.createdTime ?? 0
+  const showShopNewBadge = !!user && NEWEST_SHOP_ITEM_TIME > lastShopVisit
 
   const navOptions = isMobile
     ? getMobileNav(!!user, {

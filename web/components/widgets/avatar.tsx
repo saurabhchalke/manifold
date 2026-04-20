@@ -2059,7 +2059,7 @@ function AvatarOverlay(props: {
             <BearEarSvg
               className={clsx(
                 bearEarClasses,
-                '-scale-x-100 rotate-[25deg]',
+                'rotate-[25deg] -scale-x-100',
                 animateHatOnHover && 'group-hover:rotate-[20deg]',
                 animateHat && 'rotate-[20deg]'
               )}
@@ -2169,7 +2169,7 @@ function AvatarOverlay(props: {
             <CatEarSvg
               className={clsx(
                 'absolute origin-bottom transition-transform duration-300',
-                '-scale-x-100 rotate-[52deg]',
+                'rotate-[52deg] -scale-x-100',
                 animateHatOnHover && 'group-hover:rotate-[44deg]',
                 animateHat && 'rotate-[44deg]'
               )}

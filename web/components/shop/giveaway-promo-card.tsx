@@ -57,8 +57,7 @@ export function promoStatSizeClass(
  *  which card's gradient it sits on. */
 export const ENDED_PILL = {
   text: 'ENDED',
-  className:
-    'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  className: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
 }
 
 /** Shared shell for the Prize Drawing / Charity Giveaway promo tiles.

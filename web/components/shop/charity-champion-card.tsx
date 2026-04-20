@@ -145,130 +145,130 @@ export function CharityChampionCard(props: {
         {/* Floating trophy background decoration */}
         <ShopCardFloatingTrophy />
 
-      {/* Header */}
-      <Row className="items-center gap-2">
-        <FaTrophy className="h-5 w-5 shrink-0 text-amber-500" />
-        <span className="text-lg font-semibold text-amber-700 dark:text-amber-400">
-          Champion Trophy
-        </span>
-      </Row>
+        {/* Header */}
+        <Row className="items-center gap-2">
+          <FaTrophy className="h-5 w-5 shrink-0 text-amber-500" />
+          <span className="text-lg font-semibold text-amber-700 dark:text-amber-400">
+            Champion Trophy
+          </span>
+        </Row>
 
-      {/* Current trophy holder section */}
-      <div className="rounded-lg bg-white/60 px-3 py-2 dark:bg-gray-800/60">
-        {trophyHolder ? (
-          <Link href={`/${trophyHolder.username}`} className="block">
-            <Row className="items-center gap-2 transition-opacity hover:opacity-80">
-              <Avatar
-                avatarUrl={trophyHolder.avatarUrl}
-                username={trophyHolder.username}
-                size="xs"
-                noLink
-                className="ring-2 ring-amber-400"
-              />
-              <Col className="min-w-0 flex-1">
-                <Row className="items-center gap-1">
-                  <UserHovercard userId={trophyHolder.id}>
-                    <span className="truncate text-sm font-semibold text-amber-700 hover:underline dark:text-amber-400">
-                      {trophyHolder.name}
-                    </span>
-                  </UserHovercard>
-                  <FaTrophy
-                    className="h-3 w-3 shrink-0 text-amber-500"
-                    style={{
-                      filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.4))',
-                    }}
-                  />
-                </Row>
-                <span className="text-xs font-semibold text-amber-600">
-                  {Math.floor(trophyHolder.totalTickets).toLocaleString()}{' '}
-                  {Math.floor(trophyHolder.totalTickets) === 1
-                    ? 'entry'
-                    : 'entries'}
-                </span>
-              </Col>
-            </Row>
-            <div className="text-ink-400 mt-1 whitespace-nowrap text-xs">
-              Held since <RelativeTimestamp time={trophyHolder.claimedTime} />
-            </div>
-            {previousTrophyHolder && (
-              <div className="text-ink-400 text-xs">
-                Previously{' '}
-                <UserHovercard userId={previousTrophyHolder.id}>
-                  <Link
-                    href={`/${previousTrophyHolder.username}`}
-                    className="font-semibold text-amber-600 hover:underline dark:text-amber-400"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    @{previousTrophyHolder.username}
-                  </Link>
-                </UserHovercard>
+        {/* Current trophy holder section */}
+        <div className="rounded-lg bg-white/60 px-3 py-2 dark:bg-gray-800/60">
+          {trophyHolder ? (
+            <Link href={`/${trophyHolder.username}`} className="block">
+              <Row className="items-center gap-2 transition-opacity hover:opacity-80">
+                <Avatar
+                  avatarUrl={trophyHolder.avatarUrl}
+                  username={trophyHolder.username}
+                  size="xs"
+                  noLink
+                  className="ring-2 ring-amber-400"
+                />
+                <Col className="min-w-0 flex-1">
+                  <Row className="items-center gap-1">
+                    <UserHovercard userId={trophyHolder.id}>
+                      <span className="truncate text-sm font-semibold text-amber-700 hover:underline dark:text-amber-400">
+                        {trophyHolder.name}
+                      </span>
+                    </UserHovercard>
+                    <FaTrophy
+                      className="h-3 w-3 shrink-0 text-amber-500"
+                      style={{
+                        filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.4))',
+                      }}
+                    />
+                  </Row>
+                  <span className="text-xs font-semibold text-amber-600">
+                    {Math.floor(trophyHolder.totalTickets).toLocaleString()}{' '}
+                    {Math.floor(trophyHolder.totalTickets) === 1
+                      ? 'entry'
+                      : 'entries'}
+                  </span>
+                </Col>
+              </Row>
+              <div className="text-ink-400 mt-1 whitespace-nowrap text-xs">
+                Held since <RelativeTimestamp time={trophyHolder.claimedTime} />
               </div>
-            )}
-          </Link>
-        ) : (
-          <Row className="items-center gap-2">
-            <div className="h-6 w-6 shrink-0 rounded-full bg-gray-200 ring-2 ring-gray-300 dark:bg-gray-700 dark:ring-gray-600" />
-            <span className="text-ink-400 text-sm italic">Unclaimed</span>
-          </Row>
+              {previousTrophyHolder && (
+                <div className="text-ink-400 text-xs">
+                  Previously{' '}
+                  <UserHovercard userId={previousTrophyHolder.id}>
+                    <Link
+                      href={`/${previousTrophyHolder.username}`}
+                      className="font-semibold text-amber-600 hover:underline dark:text-amber-400"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      @{previousTrophyHolder.username}
+                    </Link>
+                  </UserHovercard>
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Row className="items-center gap-2">
+              <div className="h-6 w-6 shrink-0 rounded-full bg-gray-200 ring-2 ring-gray-300 dark:bg-gray-700 dark:ring-gray-600" />
+              <span className="text-ink-400 text-sm italic">Unclaimed</span>
+            </Row>
+          )}
+        </div>
+
+        {/* Top buyers leaderboard */}
+        {topUsers && topUsers.length > 0 && (
+          <MiniLeaderboard
+            topUsers={topUsers}
+            yourEntry={yourEntry}
+            user={user}
+          />
         )}
-      </div>
 
-      {/* Top buyers leaderboard */}
-      {topUsers && topUsers.length > 0 && (
-        <MiniLeaderboard
-          topUsers={topUsers}
-          yourEntry={yourEntry}
-          user={user}
-        />
-      )}
+        {/* Description */}
+        <p className="text-ink-500 text-xs">
+          Reserved for the person with the most entries in the charity giveaway.
+        </p>
 
-      {/* Description */}
-      <p className="text-ink-500 text-xs">
-        Reserved for the person with the most entries in the charity giveaway.
-      </p>
-
-      {/* Footer */}
-      <Col className="mt-auto pt-1">
-        {hasTrophy ? (
-          // Has trophy - show toggle (even if outbid)
-          <Row className="items-center justify-center gap-3">
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={isTrophyEnabled}
-                onChange={handleToggle}
-                disabled={toggling}
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-amber-500 peer-checked:after:translate-x-full dark:bg-gray-600" />
-              <span className="text-ink-700 ml-2 text-sm">
-                {isTrophyEnabled ? 'Enabled' : 'Disabled'}
+        {/* Footer */}
+        <Col className="mt-auto pt-1">
+          {hasTrophy ? (
+            // Has trophy - show toggle (even if outbid)
+            <Row className="items-center justify-center gap-3">
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  checked={isTrophyEnabled}
+                  onChange={handleToggle}
+                  disabled={toggling}
+                  className="peer sr-only"
+                />
+                <div className="peer h-6 w-11 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-amber-500 peer-checked:after:translate-x-full dark:bg-gray-600" />
+                <span className="text-ink-700 ml-2 text-sm">
+                  {isTrophyEnabled ? 'Enabled' : 'Disabled'}
+                </span>
+              </label>
+            </Row>
+          ) : isCurrentUserChampion ? (
+            // Champion but hasn't claimed - show claim button
+            <Button
+              color="amber"
+              size="sm"
+              className="w-full"
+              onClick={handleClaim}
+              loading={claiming}
+            >
+              <FaTrophy className="mr-2 h-4 w-4" />
+              Claim Trophy
+            </Button>
+          ) : (
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-100 py-2 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              <FaLock className="h-3 w-3" />
+              <span>
+                {champion
+                  ? `Outbid @${champion.username} to claim`
+                  : 'Earn entries in the giveaway to claim'}
               </span>
-            </label>
-          </Row>
-        ) : isCurrentUserChampion ? (
-          // Champion but hasn't claimed - show claim button
-          <Button
-            color="amber"
-            size="sm"
-            className="w-full"
-            onClick={handleClaim}
-            loading={claiming}
-          >
-            <FaTrophy className="mr-2 h-4 w-4" />
-            Claim Trophy
-          </Button>
-        ) : (
-          <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-100 py-2 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-            <FaLock className="h-3 w-3" />
-            <span>
-              {champion
-                ? `Outbid @${champion.username} to claim`
-                : 'Earn entries in the giveaway to claim'}
-            </span>
-          </div>
-        )}
-      </Col>
+            </div>
+          )}
+        </Col>
       </Card>
     </div>
   )

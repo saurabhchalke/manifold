@@ -638,8 +638,7 @@ export default function ShopPage() {
                 (!item.hidden ||
                   showHidden ||
                   ownedItemIds.has(getEntitlementId(item)) ||
-                  (item.seasonalAvailability &&
-                    isSeasonalItemAvailable(item)))
+                  (item.seasonalAvailability && isSeasonalItemAvailable(item)))
             ),
             filterOption
           ),
@@ -650,9 +649,7 @@ export default function ShopPage() {
   // above the main grid. On narrower filters, NEW items stay in place and
   // get the per-card sticker only.
   const newRegularItems =
-    filterOption === 'all'
-      ? sortedRegularItems.filter(isItemNewToUser)
-      : []
+    filterOption === 'all' ? sortedRegularItems.filter(isItemNewToUser) : []
   const mainRegularItems =
     filterOption === 'all'
       ? sortedRegularItems.filter((i) => !isItemNewToUser(i))
@@ -1167,11 +1164,7 @@ function TicketItemCard(props: {
                       {formatMoney(item.price)}
                     </span>
                     <span className="rounded bg-green-100 px-1 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-900/50 dark:text-green-300">
-                      -
-                      {Math.round(
-                        (1 - discountedPrice / item.price) * 100
-                      )}
-                      %
+                      -{Math.round((1 - discountedPrice / item.price) * 100)}%
                     </span>
                   </Row>
                 ) : (
@@ -2923,8 +2916,7 @@ function PrizeDrawingCard() {
       title="Prize Drawing"
       pill={{
         text: 'LIVE',
-        className:
-          'bg-teal-100 text-teal-700 dark:bg-teal-500 dark:text-white',
+        className: 'bg-teal-100 text-teal-700 dark:bg-teal-500 dark:text-white',
       }}
       stats={[
         {
@@ -3889,7 +3881,7 @@ function BearEarsPreview(props: { user: User | null | undefined }) {
         />
         {/* Right ear */}
         <BearEarSvg
-          className="absolute origin-bottom -scale-x-100 rotate-[25deg] transition-transform duration-300 group-hover:rotate-[20deg]"
+          className="absolute origin-bottom rotate-[25deg] -scale-x-100 transition-transform duration-300 group-hover:rotate-[20deg]"
           style={{
             right: -1,
             top: -2,
@@ -4077,7 +4069,7 @@ function CatEarsStylePreview(props: {
             }}
           />
           <CatEarSvg
-            className="absolute origin-bottom -scale-x-100 rotate-[52deg] transition-transform duration-300 group-hover:rotate-[44deg]"
+            className="absolute origin-bottom rotate-[52deg] -scale-x-100 transition-transform duration-300 group-hover:rotate-[44deg]"
             style={{
               right: -5,
               top: -2,
@@ -5631,7 +5623,7 @@ function ShopItemCard(props: {
                 !(
                   item.seasonalAvailability && isSeasonalItemAvailable(item)
                 ) && (
-                  <div className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 sm:px-2 sm:text-xs dark:bg-amber-900/50 dark:text-amber-400">
+                  <div className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 sm:px-2 sm:text-xs">
                     Hidden
                   </div>
                 )}

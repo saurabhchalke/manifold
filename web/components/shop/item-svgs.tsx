@@ -642,7 +642,13 @@ export function BearEarSvg(props: SvgProps) {
         fill={`url(#bear-inner-${uid})`}
       />
       {/* Highlight on outer (left) side */}
-      <ellipse cx="10" cy="11" rx="1.8" ry="2.2" fill="rgba(255,255,255,0.35)" />
+      <ellipse
+        cx="10"
+        cy="11"
+        rx="1.8"
+        ry="2.2"
+        fill="rgba(255,255,255,0.35)"
+      />
     </svg>
   )
 }
@@ -676,12 +682,7 @@ export function CatEarSvg(props: SvgProps) {
 export function CatWhiskersSvg(props: SvgProps) {
   return (
     <svg className={props.className} style={props.style} viewBox="0 0 24 12">
-      <g
-        stroke="#1F2225"
-        strokeWidth="1.1"
-        fill="none"
-        strokeLinecap="round"
-      >
+      <g stroke="#1F2225" strokeWidth="1.1" fill="none" strokeLinecap="round">
         <path d="M0 3 Q12 2 24 0" />
         <path d="M0 6 L24 6" />
         <path d="M0 9 Q12 10 24 12" />
