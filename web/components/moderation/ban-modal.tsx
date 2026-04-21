@@ -1153,8 +1153,7 @@ function BonusEligibilityControl({ user }: { user: User }) {
           </p>
           <Row className="flex-wrap gap-2">
             {eligibilityOptions.map((option) => {
-              const isCurrent =
-                (user.bonusEligibility ?? null) === option.value
+              const isCurrent = (user.bonusEligibility ?? null) === option.value
               return (
                 <Button
                   key={String(option.value)}
@@ -1170,8 +1169,8 @@ function BonusEligibilityControl({ user }: { user: User }) {
             })}
           </Row>
           <p className="text-ink-500 text-xs">
-            <strong>Require Verification</strong> clears eligibility so the
-            user must complete iDenfy to regain bonuses (useful for ending
+            <strong>Require Verification</strong> clears eligibility so the user
+            must complete iDenfy to regain bonuses (useful for ending
             grandfathered status).
           </p>
         </div>
