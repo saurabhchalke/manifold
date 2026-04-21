@@ -1188,11 +1188,22 @@ FIRE therefore defends and promotes the value of free speech for all Americans i
     name: 'Lightcone',
     id: 'lightcone',
     website: 'https://www.lightconeinfrastructure.com/',
-    tags: ['New'] as const,
     photo: 'https://i.imgur.com/LpMXQ6W.png',
     preview:
       'This century is critical for humanity. We build tech, infrastructure, and community to navigate it.',
     description:
       'Lightcone develops LessWrong, a popular online forum and community dedicated to improving human reasoning and decision-making. They also run a campus, Lighthaven, which provides a space for people working on the hardest problems to come together and collaborate. The Lighthaven campus was directly responsible to Manifold running our festival, Manifest!',
+  },
+  {
+    name: 'Free State Project',
+    id: 'free-state-project',
+    website: 'https://www.fsp.org/',
+    ein: '36-4668773',
+    tags: ['New'] as const,
+    photo: 'https://i.imgur.com/iJvDcJc.png',
+    preview:
+      'A mass migration of liberty-minded people to New Hampshire, working to build the freest society on earth.',
+    description:
+      "The Free State Project encourages liberty-minded people to move to New Hampshire to concentrate their efforts on building the freest society on earth. Thousands have relocated since the Project hit its 20,000-signer goal in 2016, and the organization hosts flagship events like PorcFest and the Liberty Forum each year.",
   },
 ]
