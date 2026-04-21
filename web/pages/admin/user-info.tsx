@@ -987,13 +987,13 @@ function BonusEligibilitySection({
       color: 'text-red-600',
     },
     {
-      value: null as const,
+      value: null,
       label: 'Require Verification',
       description:
         'Clear eligibility - user must complete iDenfy to get bonuses',
       color: 'text-orange-600',
     },
-  ]
+  ] as const
 
   const currentEligibility = eligibilityOptions.find(
     (o) => o.value === (user.bonusEligibility ?? null)

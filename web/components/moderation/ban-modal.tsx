@@ -1080,11 +1080,11 @@ function BonusEligibilityControl({ user }: { user: User }) {
       color: 'text-red-600',
     },
     {
-      value: null as const,
+      value: null,
       label: 'Require Verification',
       color: 'text-orange-600',
     },
-  ]
+  ] as const
 
   const currentEligibility = eligibilityOptions.find(
     (o) => o.value === (user.bonusEligibility ?? null)
