@@ -1064,7 +1064,7 @@ function BonusEligibilityControl({ user }: { user: User }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [selectedEligibility, setSelectedEligibility] = useState<
-    'verified' | 'grandfathered' | 'ineligible' | undefined
+    'verified' | 'grandfathered' | 'ineligible' | null | undefined
   >(user.bonusEligibility)
 
   const eligibilityOptions = [
@@ -1079,14 +1079,20 @@ function BonusEligibilityControl({ user }: { user: User }) {
       label: 'Ineligible',
       color: 'text-red-600',
     },
+    {
+      value: null as const,
+      label: 'Require Verification',
+      color: 'text-orange-600',
+    },
   ]
 
   const currentEligibility = eligibilityOptions.find(
-    (o) => o.value === user.bonusEligibility
+    (o) => o.value === (user.bonusEligibility ?? null)
   )
 
   const handleUpdate = async (newValue: typeof selectedEligibility) => {
-    if (!newValue || newValue === user.bonusEligibility) return
+    if (newValue === undefined) return
+    if ((newValue ?? null) === (user.bonusEligibility ?? null)) return
 
     setIsUpdating(true)
     try {
@@ -1094,9 +1100,12 @@ function BonusEligibilityControl({ user }: { user: User }) {
         userId: user.id,
         bonusEligibility: newValue,
       })
-      toast.success(`Bonus eligibility updated to '${newValue}'`)
+      toast.success(
+        newValue === null
+          ? 'User must now re-verify to receive bonuses'
+          : `Bonus eligibility updated to '${newValue}'`
+      )
       setSelectedEligibility(newValue)
-      // Reload to reflect changes
       window.location.reload()
     } catch (error) {
       toast.error(
@@ -1143,23 +1152,28 @@ function BonusEligibilityControl({ user }: { user: User }) {
             referral bonus, quest rewards, league prizes, etc.)
           </p>
           <Row className="flex-wrap gap-2">
-            {eligibilityOptions.map((option) => (
-              <Button
-                key={option.value}
-                onClick={() => handleUpdate(option.value)}
-                loading={isUpdating && selectedEligibility === option.value}
-                disabled={isUpdating || user.bonusEligibility === option.value}
-                color={
-                  user.bonusEligibility === option.value
-                    ? 'indigo'
-                    : 'gray-outline'
-                }
-                size="xs"
-              >
-                <span className={option.color}>{option.label}</span>
-              </Button>
-            ))}
+            {eligibilityOptions.map((option) => {
+              const isCurrent =
+                (user.bonusEligibility ?? null) === option.value
+              return (
+                <Button
+                  key={String(option.value)}
+                  onClick={() => handleUpdate(option.value)}
+                  loading={isUpdating && selectedEligibility === option.value}
+                  disabled={isUpdating || isCurrent}
+                  color={isCurrent ? 'indigo' : 'gray-outline'}
+                  size="xs"
+                >
+                  <span className={option.color}>{option.label}</span>
+                </Button>
+              )
+            })}
           </Row>
+          <p className="text-ink-500 text-xs">
+            <strong>Require Verification</strong> clears eligibility so the
+            user must complete iDenfy to regain bonuses (useful for ending
+            grandfathered status).
+          </p>
         </div>
       )}
     </div>

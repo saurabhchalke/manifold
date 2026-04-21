@@ -964,7 +964,7 @@ function BonusEligibilitySection({
 }) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [selectedEligibility, setSelectedEligibility] = useState<
-    'verified' | 'grandfathered' | 'ineligible' | undefined
+    'verified' | 'grandfathered' | 'ineligible' | null | undefined
   >(user.bonusEligibility)
 
   const eligibilityOptions = [
@@ -986,14 +986,22 @@ function BonusEligibilitySection({
       description: 'Not eligible for bonuses',
       color: 'text-red-600',
     },
+    {
+      value: null as const,
+      label: 'Require Verification',
+      description:
+        'Clear eligibility - user must complete iDenfy to get bonuses',
+      color: 'text-orange-600',
+    },
   ]
 
   const currentEligibility = eligibilityOptions.find(
-    (o) => o.value === user.bonusEligibility
+    (o) => o.value === (user.bonusEligibility ?? null)
   )
 
   const handleUpdate = async () => {
-    if (!selectedEligibility || selectedEligibility === user.bonusEligibility)
+    if (selectedEligibility === undefined) return
+    if ((selectedEligibility ?? null) === (user.bonusEligibility ?? null))
       return
 
     setIsUpdating(true)
@@ -1002,8 +1010,15 @@ function BonusEligibilitySection({
         userId: user.id,
         bonusEligibility: selectedEligibility,
       })
-      toast.success(`Bonus eligibility updated to '${selectedEligibility}'`)
-      onUpdate({ ...user, bonusEligibility: selectedEligibility })
+      toast.success(
+        selectedEligibility === null
+          ? 'Cleared eligibility - user must re-verify'
+          : `Bonus eligibility updated to '${selectedEligibility}'`
+      )
+      onUpdate({
+        ...user,
+        bonusEligibility: selectedEligibility ?? undefined,
+      })
     } catch (error) {
       toast.error(
         'Failed to update: ' +
@@ -1041,7 +1056,7 @@ function BonusEligibilitySection({
           <Row className="flex-wrap gap-2">
             {eligibilityOptions.map((option) => (
               <button
-                key={option.value}
+                key={String(option.value)}
                 onClick={() => setSelectedEligibility(option.value)}
                 className={`rounded-md border px-3 py-2 text-sm ${
                   selectedEligibility === option.value
@@ -1055,8 +1070,9 @@ function BonusEligibilitySection({
           </Row>
         </div>
 
-        {selectedEligibility &&
-          selectedEligibility !== user.bonusEligibility && (
+        {selectedEligibility !== undefined &&
+          (selectedEligibility ?? null) !==
+            (user.bonusEligibility ?? null) && (
             <Row className="mt-3 gap-2">
               <Button
                 onClick={handleUpdate}
@@ -1097,7 +1113,9 @@ function BonusEligibilitySection({
             otherwise not eligible
           </li>
           <li>
-            <strong>Not Set:</strong> New user who hasn't completed verification
+            <strong>Require Verification / Not Set:</strong> User must complete
+            iDenfy verification to receive bonuses. Use this to end a user's
+            grandfathered status.
           </li>
         </ul>
       </div>

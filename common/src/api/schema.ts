@@ -174,7 +174,9 @@ export const API = (_apiTypeCheck = {
     props: z
       .object({
         userId: z.string(),
-        bonusEligibility: z.enum(['verified', 'grandfathered', 'ineligible']),
+        bonusEligibility: z
+          .enum(['verified', 'grandfathered', 'ineligible'])
+          .nullable(),
       })
       .strict(),
     returns: {} as { success: boolean },

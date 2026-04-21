@@ -1,5 +1,6 @@
 import { createSupabaseDirectClient } from 'shared/supabase/init'
 import { updateUser } from 'shared/supabase/users'
+import { FieldVal } from 'shared/supabase/utils'
 import { getUser, log } from 'shared/utils'
 import { APIError, APIHandler } from './helpers/endpoint'
 import { throwErrorIfNotAdmin } from 'shared/helpers/auth'
@@ -10,28 +11,35 @@ export const adminSetBonusEligibility: APIHandler<
 > = async (body, auth) => {
   const { userId, bonusEligibility } = body
 
-  // Only admins can modify bonus eligibility
   throwErrorIfNotAdmin(auth.uid)
 
-  // Prevent modifying admin accounts
   if (isAdminId(userId)) {
     throw new APIError(403, 'Cannot modify admin account bonus eligibility')
   }
 
   const pg = createSupabaseDirectClient()
 
-  // Get the user to verify they exist
   const user = await getUser(userId)
   if (!user) {
     throw new APIError(404, 'User not found')
   }
 
-  // Update the user's bonus eligibility
-  await updateUser(pg, userId, { bonusEligibility })
-
-  log(
-    `Admin ${auth.uid} set bonusEligibility to '${bonusEligibility}' for user ${userId}`
-  )
+  if (bonusEligibility === null) {
+    // Clear the field entirely - user will be treated as "must verify"
+    // (canReceiveBonuses returns false for undefined, which triggers the
+    // VerificationRequiredModal and shows the settings verification option)
+    await updateUser(pg, userId, {
+      bonusEligibility: FieldVal.delete() as any,
+    })
+    log(
+      `Admin ${auth.uid} cleared bonusEligibility for user ${userId} (must re-verify)`
+    )
+  } else {
+    await updateUser(pg, userId, { bonusEligibility })
+    log(
+      `Admin ${auth.uid} set bonusEligibility to '${bonusEligibility}' for user ${userId}`
+    )
+  }
 
   return { success: true }
 }
