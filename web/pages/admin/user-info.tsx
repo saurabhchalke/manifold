@@ -1071,8 +1071,7 @@ function BonusEligibilitySection({
         </div>
 
         {selectedEligibility !== undefined &&
-          (selectedEligibility ?? null) !==
-            (user.bonusEligibility ?? null) && (
+          (selectedEligibility ?? null) !== (user.bonusEligibility ?? null) && (
             <Row className="mt-3 gap-2">
               <Button
                 onClick={handleUpdate}
