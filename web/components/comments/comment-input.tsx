@@ -121,8 +121,7 @@ export function CommentInput(props: {
     user &&
     !canComment &&
     (allowPurchasedMana || user.bonusEligibility !== 'ineligible')
-  if (showVerifyPrompt)
-    return <VerifyToCommentPrompt className={className} />
+  if (showVerifyPrompt) return <VerifyToCommentPrompt className={className} />
 
   return blocked ? (
     <div className={'text-ink-500 mb-3 text-sm'}>
