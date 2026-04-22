@@ -817,6 +817,7 @@ export default function ShopPage() {
             )
               return null
             const isSeasonal = filter === 'seasonal'
+            const isMerch = filter === 'merch'
             const isActive = filterOption === filter
             return (
               <button
@@ -826,10 +827,14 @@ export default function ShopPage() {
                   'rounded-full px-3 py-1 text-sm font-medium transition-colors',
                   isActive && isSeasonal
                     ? 'bg-gradient-to-r from-pink-500 to-rose-400 text-white shadow-sm'
+                    : isActive && isMerch
+                    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-white shadow-sm ring-1 ring-amber-300/60'
                     : isActive
                     ? 'bg-primary-500 text-white'
                     : isSeasonal
                     ? 'bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 hover:from-pink-200 hover:to-rose-200 dark:from-pink-900/30 dark:to-rose-900/30 dark:text-pink-300'
+                    : isMerch
+                    ? 'bg-gradient-to-r from-amber-100 via-yellow-100 to-amber-200 text-amber-800 shadow-sm ring-1 ring-amber-300/50 hover:from-amber-200 hover:via-yellow-200 hover:to-amber-300 dark:from-amber-900/40 dark:via-yellow-900/30 dark:to-amber-900/50 dark:text-amber-200 dark:ring-amber-500/40'
                     : 'bg-canvas-50 text-ink-600 hover:bg-canvas-100'
                 )}
               >
@@ -1510,7 +1515,9 @@ function MerchItemCard(props: {
     // sizesForSelection rebuilds every render — depend on selectedColor instead
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor])
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = useState(
+    item.defaultImageIndex ?? 0
+  )
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [showShippingModal, setShowShippingModal] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
@@ -1554,11 +1561,79 @@ function MerchItemCard(props: {
     item.merchImagesByColor?.[selectedColor]) ||
     item.merchImages || [{ label: 'Front', url: item.imageUrl || '' }]
   // Reset the carousel when the user swaps colours so they always start on
-  // the new colour's first image.
+  // the new colour's default image (or the first image when no default set).
   useEffect(() => {
-    setCurrentImageIndex(0)
+    setCurrentImageIndex(item.defaultImageIndex ?? 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor])
+
+  // Touch-swipe gestures for the image carousel. The image translates with
+  // the finger in real time for tactile feedback; on release we either commit
+  // (if dragged past the threshold) or snap back with a transition.
+  // Direction is locked after 8px of motion — mostly-vertical motion is
+  // ignored so page scroll still works when the finger starts on the image.
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isSwipeActive, setIsSwipeActive] = useState(false)
+  const SWIPE_COMMIT_THRESHOLD = 40
+  const SWIPE_DIRECTION_LOCK = 8
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0]
+    touchStartRef.current = { x: t.clientX, y: t.clientY }
+    setIsSwipeActive(false)
+  }
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const start = touchStartRef.current
+    if (!start || images.length <= 1) return
+    const t = e.touches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+    if (!isSwipeActive) {
+      if (Math.abs(dx) < SWIPE_DIRECTION_LOCK && Math.abs(dy) < SWIPE_DIRECTION_LOCK) return
+      if (Math.abs(dx) <= Math.abs(dy)) {
+        // User is scrolling vertically — abandon this gesture for the carousel.
+        touchStartRef.current = null
+        return
+      }
+      setIsSwipeActive(true)
+    }
+    setDragOffset(dx)
+  }
+  const handleTouchEnd = () => {
+    const dx = dragOffset
+    const wasActive = isSwipeActive
+    touchStartRef.current = null
+    if (!wasActive) {
+      setDragOffset(0)
+      setIsSwipeActive(false)
+      return
+    }
+    if (Math.abs(dx) < SWIPE_COMMIT_THRESHOLD) {
+      // Below threshold: snap back with the transition.
+      setDragOffset(0)
+      setIsSwipeActive(false)
+      return
+    }
+    // Above threshold: flip index, then let the strip's transition slide it
+    // to the new resting position. Wrap-around (last → first or first → last)
+    // would slide the strip across every image in between, so for those we
+    // suppress the transition for one frame and snap to the target instead.
+    const isWrap =
+      (dx < 0 && currentImageIndex === images.length - 1) ||
+      (dx > 0 && currentImageIndex === 0)
+    if (dx < 0) {
+      setCurrentImageIndex((i) => (i === images.length - 1 ? 0 : i + 1))
+    } else {
+      setCurrentImageIndex((i) => (i === 0 ? images.length - 1 : i - 1))
+    }
+    setDragOffset(0)
+    if (isWrap) {
+      requestAnimationFrame(() => setIsSwipeActive(false))
+    } else {
+      setIsSwipeActive(false)
+    }
+  }
 
   // Pick the variant matching the user's colour + size selection.
   const findSelectedVariant = () =>
@@ -1686,13 +1761,66 @@ function MerchItemCard(props: {
             </div>
           )}
 
-          {/* Image carousel */}
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-            <img
-              src={images[currentImageIndex].url}
-              alt={`${item.name} - ${images[currentImageIndex].label}`}
-              className="h-full w-full object-contain p-2"
-            />
+          {/* Image carousel — all images laid out in a horizontal strip; we
+              translate the strip rather than the visible image so neighbouring
+              images slide in from the side as the user drags. */}
+          <div
+            className="relative aspect-square touch-pan-y overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
+            {(() => {
+              // Pad the strip with wrap-around clones so a swipe at either
+              // edge reveals the image it'll wrap to (last image pulls in
+              // from the left at index 0; first image pulls in from the right
+              // at the last index). After commit, the index flips and the
+              // strip silently snaps to the real position of the same image
+              // (see isWrap branch in handleTouchEnd) — no visible jump since
+              // both padded positions display the same URL.
+              const hasMultiple = images.length > 1
+              const padded = hasMultiple
+                ? [images[images.length - 1], ...images, images[0]]
+                : images
+              const slot = hasMultiple ? currentImageIndex + 1 : 0
+              return (
+                <div
+                  className={clsx(
+                    'flex h-full will-change-transform',
+                    // Soft ease-out-quint (cubic-bezier(0.22, 1, 0.36, 1)) +
+                    // ~400ms: small swipes glide back, commits settle in.
+                    !isSwipeActive &&
+                      'transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+                  )}
+                  style={{
+                    width: `${padded.length * 100}%`,
+                    transform: `translateX(calc(${
+                      -slot * (100 / padded.length)
+                    }% + ${dragOffset}px))`,
+                  }}
+                >
+                  {padded.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img.url}
+                      alt={`${item.name} - ${img.label}`}
+                      className="h-full object-contain p-2"
+                      style={{
+                        width: `${100 / padded.length}%`,
+                        flexShrink: 0,
+                      }}
+                      draggable={false}
+                    />
+                  ))}
+                </div>
+              )
+            })()}
+            {images.length > 1 && (
+              <div className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
+                {images[currentImageIndex].label}
+              </div>
+            )}
             <Row className="absolute bottom-2 left-1/2 -translate-x-1/2 gap-1.5">
               {images.map((_, idx) => (
                 <button
