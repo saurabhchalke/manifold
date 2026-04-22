@@ -301,6 +301,27 @@ export default function ShopPage() {
     api('me/update', { lastShopVisitTime: Date.now() }).catch(() => {})
   }, [user?.id])
 
+  // Fetch user's merch orders to show "Already purchased" state
+  const { data: userMerchData, refresh: refreshMerchOrders } = useAPIGetter(
+    'get-user-merch-orders',
+    {},
+    undefined,
+    undefined,
+    !!user
+  )
+  const purchasedMerchIds = useMemo(
+    () => new Set((userMerchData?.orders ?? []).map((o) => o.itemId)),
+    [userMerchData]
+  )
+
+  // Fetch merch stock status
+  const { data: stockData } = useAPIGetter('get-merch-stock-status', {})
+  const outOfStockIds = useMemo(
+    () => new Set(stockData?.outOfStockItems ?? []),
+    [stockData]
+  )
+
+  // Fetch charity giveaway data once for both cards
   const { data: charityData, refresh: refreshCharityData } = useAPIGetter(
     'get-charity-giveaway',
     {
@@ -655,6 +676,16 @@ export default function ShopPage() {
       ? sortedRegularItems.filter((i) => !isItemNewToUser(i))
       : sortedRegularItems
 
+  // When merch has launched and at least one merch item is NEW to this user,
+  // promote the merch section to the top of the page so first-time visitors
+  // see it before scrolling. Once they visit /shop and clear the NEW state,
+  // merch falls back to its usual position below the regular grid.
+  const merchHasNewItems =
+    filterOption === 'all' &&
+    getMerchItems().some(
+      (item) => (!item.hidden || showHidden) && isItemNewToUser(item)
+    )
+
   // Shared render so the NEW section + main grid handle items identically,
   // including the charity-champion-trophy special case.
   const renderShopItem = (item: ShopItem) => {
@@ -821,6 +852,22 @@ export default function ShopPage() {
           </>
         )}
 
+        {/* Promote merch above tickets/regular grid on first visit after launch
+            (any merch item is NEW to this user). Falls back to its usual
+            position below the regular grid once they've cleared the NEW state. */}
+        {merchHasNewItems && (
+          <MerchSection
+            user={user}
+            entitlements={effectiveEntitlements}
+            purchasedMerchIds={purchasedMerchIds}
+            outOfStockIds={outOfStockIds}
+            isItemNewToUser={isItemNewToUser}
+            showHidden={showHidden}
+            filterOption={filterOption}
+            onPurchased={refreshMerchOrders}
+          />
+        )}
+
         {/* Tickets + shop items — hidden when merch filter is active */}
         {filterOption !== 'merch' && (
           <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
@@ -844,46 +891,30 @@ export default function ShopPage() {
           </div>
         )}
 
-        {/* Merch section — shown on 'all' and 'merch' filters */}
-        {(filterOption === 'all' || filterOption === 'merch') &&
-          getMerchItems().filter((item) => !item.hidden || showHidden).length >
-            0 && (
-            <>
-              {filterOption !== 'merch' && (
-                <Row className="mb-4 mt-8 items-center gap-2">
-                  <span className="text-lg font-semibold">Merch</span>
-                  <span className="text-ink-500 text-sm">
-                    (Ships worldwide)
-                  </span>
-                </Row>
-              )}
-              <div
-                className={clsx(
-                  'grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 lg:grid-cols-3',
-                  filterOption === 'merch' && 'mt-0'
-                )}
-              >
-                {getMerchItems()
-                  .filter((item) => !item.hidden || showHidden)
-                  .map((item) => (
-                    <MerchItemCard
-                      key={item.id}
-                      item={item}
-                      user={user}
-                      allEntitlements={effectiveEntitlements}
-                    />
-                  ))}
-              </div>
-            </>
-          )}
+        {/* Merch section in its default position. Skipped when already
+            promoted above so we don't render the cards twice. */}
+        {!merchHasNewItems && (
+          <MerchSection
+            user={user}
+            entitlements={effectiveEntitlements}
+            purchasedMerchIds={purchasedMerchIds}
+            outOfStockIds={outOfStockIds}
+            isItemNewToUser={isItemNewToUser}
+            showHidden={showHidden}
+            filterOption={filterOption}
+            onPurchased={refreshMerchOrders}
+          />
+        )}
 
-        {isAdminOrMod && (
+        {/* Admin testing tools — hidden for the merch launch. Uncomment to
+            re-enable for admin/mod debugging. */}
+        {/* {isAdminOrMod && (
           <AdminTestingTools
             user={user}
             showHidden={showHidden}
             setShowHidden={setShowHidden}
           />
-        )}
+        )} */}
       </Col>
     </Page>
   )
@@ -1361,24 +1392,129 @@ function TicketItemCard(props: {
   )
 }
 
+/** Renders the merch grid plus its "Merch" heading (heading hidden on the
+ *  merch filter, since the page header already names the section). Pulled out
+ *  so the shop page can render it in two positions: promoted above the regular
+ *  grid when any merch item is NEW to the user, or in its default spot below. */
+function MerchSection(props: {
+  user: User | null | undefined
+  entitlements: UserEntitlement[]
+  purchasedMerchIds: Set<string>
+  outOfStockIds: Set<string>
+  isItemNewToUser: (item: ShopItem) => boolean
+  showHidden: boolean
+  filterOption: string
+  onPurchased: () => void
+}) {
+  const {
+    user,
+    entitlements,
+    purchasedMerchIds,
+    outOfStockIds,
+    isItemNewToUser,
+    showHidden,
+    filterOption,
+    onPurchased,
+  } = props
+  if (filterOption !== 'all' && filterOption !== 'merch') return null
+  const items = getMerchItems().filter((item) => !item.hidden || showHidden)
+  if (items.length === 0) return null
+  return (
+    <>
+      {filterOption !== 'merch' && (
+        <Row className="mb-4 mt-8 items-center gap-2">
+          <span className="text-lg font-semibold">Merch</span>
+          <span className="text-ink-500 text-sm">(Ships worldwide)</span>
+        </Row>
+      )}
+      <div
+        className={clsx(
+          'mb-8 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 lg:grid-cols-3',
+          filterOption === 'merch' && 'mt-0'
+        )}
+      >
+        {items.map((item) => (
+          <MerchItemCard
+            key={item.id}
+            item={item}
+            user={user}
+            allEntitlements={entitlements}
+            alreadyPurchased={purchasedMerchIds.has(item.id)}
+            outOfStock={outOfStockIds.has(item.id)}
+            isNew={isItemNewToUser(item)}
+            onPurchased={onPurchased}
+          />
+        ))}
+      </div>
+    </>
+  )
+}
+
 function MerchItemCard(props: {
   item: ShopItem
   user: User | null | undefined
   allEntitlements?: UserEntitlement[]
+  alreadyPurchased?: boolean
+  outOfStock?: boolean
+  isNew?: boolean
+  onPurchased?: () => void
 }) {
-  const { item, user, allEntitlements } = props
+  const {
+    item,
+    user,
+    allEntitlements,
+    alreadyPurchased,
+    outOfStock,
+    isNew,
+    onPurchased,
+  } = props
   const shopDiscount = getBenefit(allEntitlements, 'shopDiscount', 0)
   const discountedPrice =
     shopDiscount > 0 ? Math.floor(item.price * (1 - shopDiscount)) : item.price
   const hasDiscount = shopDiscount > 0
-  const singleVariant = (item.variants ?? []).length === 1
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    singleVariant ? item.variants![0].size : null
+  // Distinct colours offered by this item (in catalog order). Empty for
+  // single-colour items (caps, AGGC tee) — colour selector hides when empty.
+  const colors = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (item.variants ?? [])
+            .map((v) => v.color)
+            .filter((c): c is string => !!c)
+        )
+      ),
+    [item.variants]
   )
+  const hasColors = colors.length > 0
+  const [selectedColor, setSelectedColor] = useState<string | null>(
+    hasColors ? colors[0] : null
+  )
+  // Sizes available for the current colour selection (or all sizes if the
+  // item is single-colour).
+  const sizesForSelection = (item.variants ?? []).filter(
+    (v) => !hasColors || v.color === selectedColor
+  )
+  const singleVariant = sizesForSelection.length === 1
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    singleVariant ? sizesForSelection[0].size : null
+  )
+  // If the user picks a colour where their previously-selected size doesn't
+  // exist, drop the selection so they re-pick.
+  useEffect(() => {
+    if (
+      selectedSize &&
+      !sizesForSelection.some((v) => v.size === selectedSize)
+    ) {
+      setSelectedSize(singleVariant ? sizesForSelection[0].size : null)
+    }
+    // sizesForSelection rebuilds every render — depend on selectedColor instead
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor])
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [showShippingModal, setShowShippingModal] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [fetchingRates, setFetchingRates] = useState(false)
   const [shippingRates, setShippingRates] = useState<ShippingRate[] | null>(
     null
@@ -1411,9 +1547,25 @@ function MerchItemCard(props: {
   const canPurchase = user && user.balance >= discountedPrice
   const variants = item.variants ?? []
 
-  const images = item.merchImages ?? [
-    { label: 'Front', url: item.imageUrl || '' },
-  ]
+  // Per-colour image carousel takes precedence when set; falls back to the
+  // shared `merchImages` for single-colour items.
+  const images =
+    (hasColors && selectedColor && item.merchImagesByColor?.[selectedColor]) ||
+    item.merchImages ||
+    [{ label: 'Front', url: item.imageUrl || '' }]
+  // Reset the carousel when the user swaps colours so they always start on
+  // the new colour's first image.
+  useEffect(() => {
+    setCurrentImageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor])
+
+  // Pick the variant matching the user's colour + size selection.
+  const findSelectedVariant = () =>
+    variants.find(
+      (v) =>
+        v.size === selectedSize && (!hasColors || v.color === selectedColor)
+    )
 
   const handleBuyClick = () => {
     if (!selectedSize) {
@@ -1431,7 +1583,7 @@ function MerchItemCard(props: {
   }
 
   const handleGetShippingRates = async () => {
-    const variant = variants.find((v) => v.size === selectedSize)
+    const variant = findSelectedVariant()
     if (!variant) return
 
     setFetchingRates(true)
@@ -1462,7 +1614,7 @@ function MerchItemCard(props: {
 
   const handleSubmitOrder = async () => {
     if (!user || !selectedSize || !selectedShipping) return
-    const variant = variants.find((v) => v.size === selectedSize)
+    const variant = findSelectedVariant()
     if (!variant) return
 
     setPurchasing(true)
@@ -1489,6 +1641,7 @@ function MerchItemCard(props: {
         zip: '',
         country: 'US',
       })
+      onPurchased?.()
     } catch (e: any) {
       toast.error(e.message || 'Failed to place order')
       setShowConfirmOrderModal(false)
@@ -1502,8 +1655,32 @@ function MerchItemCard(props: {
 
   return (
     <>
-      <Card className="group relative flex flex-col gap-3 p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-200/50 hover:ring-2 hover:ring-indigo-500 dark:hover:shadow-indigo-900/30">
-        {item.hidden && (
+      {/* Wrap Card in a relative flex column so (a) the NEW sticker can
+          overflow the card's clipping, and (b) the Card stretches to the full
+          grid-cell height — without that the inner mt-auto on the price/buy
+          row has no extra space to consume and the button doesn't anchor to
+          the bottom. */}
+      <div className="relative flex h-full flex-col">
+        {isNew && <NewBadge variant="sticker" />}
+        <Card
+          className={clsx(
+            'group relative flex flex-1 flex-col gap-3 overflow-hidden p-4 transition-all duration-200',
+            outOfStock || alreadyPurchased
+              ? 'opacity-75'
+              : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-200/50 hover:ring-2 hover:ring-indigo-500 dark:hover:shadow-indigo-900/30'
+          )}
+        >
+        {outOfStock && (
+          <div className="absolute right-2 top-2 z-10 rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
+            Out of Stock
+          </div>
+        )}
+        {alreadyPurchased && !outOfStock && (
+          <div className="absolute right-2 top-2 z-10 rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
+            Purchased
+          </div>
+        )}
+        {item.hidden && !outOfStock && !alreadyPurchased && (
           <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
             Hidden
           </div>
@@ -1560,34 +1737,66 @@ function MerchItemCard(props: {
         <div className="text-base font-semibold sm:text-lg">{item.name}</div>
         <p className="text-ink-600 text-sm">{item.description}</p>
 
-        {/* Size selector (hidden for single-variant items like one-size caps) */}
-        {!singleVariant && (
-          <Col className="gap-2">
-            <span className="text-ink-600 text-sm font-medium">
-              Select size:
+        {/* Colour selector — shown only when the item has multiple colours.
+            Same flex-wrap pattern as the size row below. Each colour swap
+            updates the image carousel and re-filters the available sizes. */}
+        {hasColors && (
+          <Row className="flex-wrap items-center gap-1.5">
+            <span className="text-ink-600 mr-1 text-sm font-medium">
+              Colour:
             </span>
-            <Row className="flex-wrap gap-2">
-              {variants.map((variant) => (
-                <button
-                  key={variant.size}
-                  onClick={() => setSelectedSize(variant.size)}
-                  className={clsx(
-                    'rounded-md border-2 px-3 py-1.5 text-sm font-medium transition-all',
-                    selectedSize === variant.size
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
-                      : 'border-ink-200 hover:border-ink-400 text-ink-700'
-                  )}
-                >
-                  {variant.size}
-                </button>
-              ))}
-            </Row>
-          </Col>
+            {colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={clsx(
+                  'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
+                  selectedColor === color
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                    : 'border-ink-200 hover:border-ink-400 text-ink-700'
+                )}
+              >
+                {color}
+              </button>
+            ))}
+          </Row>
         )}
 
-        {/* Price and buy button */}
-        <Row className="border-ink-200 mt-auto items-center justify-between border-t pt-3">
-          <Col>
+        {/* Size selector (hidden for single-variant items like one-size caps).
+            Label + buttons share one flex-wrap row so the first few sizes sit
+            inline with "Size:" and only the overflow wraps onto line 2. */}
+        {!singleVariant && (
+          <Row className="flex-wrap items-center gap-1.5">
+            <span className="text-ink-600 mr-1 text-sm font-medium">Size:</span>
+            {sizesForSelection.map((variant) => (
+              <button
+                key={variant.size}
+                onClick={() => setSelectedSize(variant.size)}
+                className={clsx(
+                  'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
+                  selectedSize === variant.size
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                    : 'border-ink-200 hover:border-ink-400 text-ink-700'
+                )}
+              >
+                {variant.size}
+              </button>
+            ))}
+          </Row>
+        )}
+
+        {/* Price block + full-width buy button stacked below.
+            Keeps the 3-wide grid readable — the old side-by-side layout
+            crammed the pricing into ~half a card and wrapped the button
+            text. Strikethrough original price sits ABOVE the discounted
+            price, matching the regular ShopItemCard layout. */}
+        <Col className="border-ink-200 mt-auto gap-2 border-t pt-3">
+          <Col className="gap-0.5">
+            {hasDiscount && (
+              <span className="text-ink-400 text-xs line-through">
+                {formatMoney(item.price)}
+              </span>
+            )}
             <div className="text-lg font-bold text-teal-600">
               {hasDiscount
                 ? formatMoney(discountedPrice)
@@ -1598,11 +1807,6 @@ function MerchItemCard(props: {
                 </span>
               )}
             </div>
-            {hasDiscount && (
-              <span className="text-ink-400 text-xs line-through">
-                {formatMoney(item.price)}
-              </span>
-            )}
             <span className="text-ink-500 text-xs">
               + shipping (paid in mana)
             </span>
@@ -1610,15 +1814,23 @@ function MerchItemCard(props: {
               <Row className="text-ink-500 mt-0.5 items-center gap-1 text-xs">
                 <span>Limit 1 per customer</span>
                 <InfoTooltip
-                  text="We hope to lift this restriction once the mana shop is up and running smoothly!"
+                  text="Can't get enough? Keep an eye out for new merch drops!"
                   size="sm"
                 />
               </Row>
             )}
           </Col>
-          {!canPurchase && user ? (
-            <Link href="/checkout">
-              <Button size="sm" color="gradient-pink">
+          {outOfStock ? (
+            <Button size="sm" color="gray" disabled className="w-full">
+              Out of Stock
+            </Button>
+          ) : alreadyPurchased ? (
+            <Button size="sm" color="gray" disabled className="w-full">
+              Purchased
+            </Button>
+          ) : !canPurchase && user ? (
+            <Link href="/checkout" className="w-full">
+              <Button size="sm" color="gradient-pink" className="w-full">
                 Buy mana
               </Button>
             </Link>
@@ -1628,12 +1840,14 @@ function MerchItemCard(props: {
               color="indigo"
               disabled={!user || !selectedSize}
               onClick={handleBuyClick}
+              className="w-full"
             >
               {selectedSize ? 'Buy' : 'Select a size'}
             </Button>
           )}
-        </Row>
+        </Col>
       </Card>
+      </div>
 
       {/* Purchase confirmation modal */}
       <Modal open={showPurchaseModal} setOpen={setShowPurchaseModal} size="md">
@@ -1893,7 +2107,10 @@ function MerchItemCard(props: {
             <Button
               color="indigo"
               disabled={!shippingInfo.name || !selectedShipping}
-              onClick={() => setShowConfirmOrderModal(true)}
+              onClick={() => {
+                setAcceptedTerms(false)
+                setShowConfirmOrderModal(true)
+              }}
             >
               Place Order ({formatMoney(discountedPrice)}
               {selectedShipping &&
@@ -1986,14 +2203,20 @@ function MerchItemCard(props: {
             </Row>
           </Col>
 
-          <div className="rounded-lg bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
-            <Row className="items-start gap-2">
-              <span className="text-amber-700 dark:text-amber-300">
-                Please verify all details above. Orders cannot be modified after
-                submission.
-              </span>
-            </Row>
-          </div>
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="text-amber-700 dark:text-amber-300">
+              I understand that orders are final once confirmed with our
+              fulfillment partner. Refunds may be issued at admin discretion
+              before an order ships. Mana spent on merch is non-refundable
+              after shipment.
+            </span>
+          </label>
 
           <Row className="justify-end gap-2">
             <Button
@@ -2005,7 +2228,7 @@ function MerchItemCard(props: {
             <Button
               color="indigo"
               loading={purchasing}
-              disabled={countdown > 0 || purchasing}
+              disabled={countdown > 0 || purchasing || !acceptedTerms}
               onClick={handleSubmitOrder}
             >
               {purchasing
