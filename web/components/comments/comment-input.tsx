@@ -8,7 +8,7 @@ import { Bet } from 'common/bet'
 import { ContractComment, MAX_COMMENT_LENGTH } from 'common/comment'
 import { Contract } from 'common/contract'
 import { STARTING_BALANCE } from 'common/economy'
-import { canReceiveBonuses, User } from 'common/user'
+import { canCommentOnMarket, canReceiveBonuses, User } from 'common/user'
 import { formatMoney } from 'common/util/format'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -45,6 +45,9 @@ export function CommentInput(props: {
   autoFocus: boolean
   onClearInput?: () => void
   priorityUserIds?: string[] // user IDs to prioritize in mention suggestions (e.g., contract creator first, then commenters)
+  // When true (market comments), users who purchased mana can comment even
+  // without bonus eligibility. Post comments leave this off.
+  allowPurchasedMana?: boolean
 }) {
   const {
     parentCommentId,
@@ -58,6 +61,7 @@ export function CommentInput(props: {
     commentTypes,
     onClearInput,
     priorityUserIds,
+    allowPurchasedMana,
   } = props
   const user = useUser()
 
@@ -108,11 +112,16 @@ export function CommentInput(props: {
 
   if (user?.isBannedFromPosting) return <></>
 
-  if (
+  const canComment = user
+    ? allowPurchasedMana
+      ? canCommentOnMarket(user)
+      : canReceiveBonuses(user)
+    : true
+  const showVerifyPrompt =
     user &&
-    !canReceiveBonuses(user) &&
-    user.bonusEligibility !== 'ineligible'
-  )
+    !canComment &&
+    (allowPurchasedMana || user.bonusEligibility !== 'ineligible')
+  if (showVerifyPrompt)
     return <VerifyToCommentPrompt className={className} />
 
   return blocked ? (
@@ -430,6 +439,7 @@ export function ContractCommentInput(props: {
         commentTypes={commentTypes}
         onClearInput={onClearInput}
         priorityUserIds={[playContract.creatorId, ...(commenterUserIds ?? [])]}
+        allowPurchasedMana
       />
     </>
   )

@@ -213,6 +213,11 @@ export const canReceiveBonuses = (user: User) =>
   user.bonusEligibility === 'verified' ||
   user.bonusEligibility === 'grandfathered'
 
+// Users who can comment on markets: bonus-eligible (verified/grandfathered)
+// OR anyone who has purchased mana.
+export const canCommentOnMarket = (user: User) =>
+  canReceiveBonuses(user) || user.purchasedMana === true
+
 // expires: sep 26th, ~530pm PT
 const LIMITED_TIME_DEAL_END = 1727311753233 + DAY_MS
 export const introductoryTimeWindow = (user: User) =>
