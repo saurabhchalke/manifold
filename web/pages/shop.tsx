@@ -1590,7 +1590,11 @@ function MerchItemCard(props: {
     const dx = t.clientX - start.x
     const dy = t.clientY - start.y
     if (!isSwipeActive) {
-      if (Math.abs(dx) < SWIPE_DIRECTION_LOCK && Math.abs(dy) < SWIPE_DIRECTION_LOCK) return
+      if (
+        Math.abs(dx) < SWIPE_DIRECTION_LOCK &&
+        Math.abs(dy) < SWIPE_DIRECTION_LOCK
+      )
+        return
       if (Math.abs(dx) <= Math.abs(dy)) {
         // User is scrolling vertically — abandon this gesture for the carousel.
         touchStartRef.current = null
