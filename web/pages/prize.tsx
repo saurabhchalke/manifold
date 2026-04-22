@@ -1789,9 +1789,7 @@ function WalletClaimFormInner(props: {
     return (
       <>
         <Col className="gap-4">
-          {!hasBrowserWallet && (
-            <NoWalletDetectedBanner />
-          )}
+          {!hasBrowserWallet && <NoWalletDetectedBanner />}
 
           <Col className="items-center gap-2">
             <Button
@@ -1803,7 +1801,7 @@ function WalletClaimFormInner(props: {
               🔗 Connect Wallet
             </Button>
             {friendlyConnectError && (
-              <div className="w-full rounded-lg border border-scarlet-200 bg-scarlet-50 p-3 dark:border-scarlet-800 dark:bg-scarlet-950/30">
+              <div className="border-scarlet-200 bg-scarlet-50 dark:border-scarlet-800 dark:bg-scarlet-950/30 w-full rounded-lg border p-3">
                 <p className="text-scarlet-700 dark:text-scarlet-300 text-sm font-medium">
                   {friendlyConnectError.title}
                 </p>
@@ -1844,19 +1842,19 @@ function WalletClaimFormInner(props: {
 
             {!hasBrowserWallet && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-                <p className="text-amber-800 dark:text-amber-300 text-sm font-medium">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                   No browser wallet detected
                 </p>
-                <p className="text-amber-700 dark:text-amber-400 mt-1 text-xs">
-                  You need a wallet browser extension (like MetaMask) to
-                  receive your prize. Desktop apps like OneKey won't work on
-                  their own — install the browser extension too.
+                <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                  You need a wallet browser extension (like MetaMask) to receive
+                  your prize. Desktop apps like OneKey won't work on their own —
+                  install the browser extension too.
                 </p>
                 <a
                   href="https://metamask.io/download"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-800 dark:text-amber-300 mt-2 inline-block text-xs font-semibold underline"
+                  className="mt-2 inline-block text-xs font-semibold text-amber-800 underline dark:text-amber-300"
                 >
                   Install MetaMask →
                 </a>
@@ -1961,18 +1959,18 @@ function NoWalletDetectedBanner() {
       <Col className="gap-2">
         <Row className="items-center gap-2">
           <span className="text-lg">🦊</span>
-          <span className="text-amber-900 dark:text-amber-200 font-semibold">
+          <span className="font-semibold text-amber-900 dark:text-amber-200">
             You'll need a crypto wallet to claim
           </span>
         </Row>
-        <p className="text-amber-800 dark:text-amber-300 text-sm">
+        <p className="text-sm text-amber-800 dark:text-amber-300">
           We didn't detect a wallet browser extension. Install MetaMask (or
-          another Ethereum wallet extension) in your browser, then come back
-          and click Connect Wallet.
+          another Ethereum wallet extension) in your browser, then come back and
+          click Connect Wallet.
         </p>
-        <p className="text-amber-700 dark:text-amber-400 text-xs">
-          Note: desktop-only apps like OneKey's .exe don't work here unless
-          you also install their browser extension.
+        <p className="text-xs text-amber-700 dark:text-amber-400">
+          Note: desktop-only apps like OneKey's .exe don't work here unless you
+          also install their browser extension.
         </p>
         <Row className="mt-1 flex-wrap gap-3">
           <a
@@ -1987,7 +1985,7 @@ function NoWalletDetectedBanner() {
             href="https://ethereum.org/en/wallets/find-wallet/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-amber-800 dark:text-amber-300 text-xs font-medium underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 underline dark:text-amber-300"
           >
             Browse other wallets
           </a>
@@ -2031,7 +2029,7 @@ function getFriendlyConnectError(
     return {
       title: 'No wallet provider found',
       description:
-        'Your browser doesn\'t have a wallet extension installed or enabled.',
+        "Your browser doesn't have a wallet extension installed or enabled.",
       showInstallLink: true,
     }
   }
