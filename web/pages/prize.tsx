@@ -1753,6 +1753,14 @@ function WalletClaimFormInner(props: {
   const { connect, isPending: isConnecting, error: connectError } = useConnect()
   const { disconnect } = useDisconnect()
   const connectors = useConnectors()
+  const hasBrowserWallet = useHasBrowserWallet(connectors)
+
+  // Hide the generic fallback `injected` connector when no browser wallet is
+  // actually present — clicking it produces a cryptic viem error. Keep any
+  // EIP-6963-detected wallets (id !== 'injected') and WalletConnect.
+  const availableConnectors = hasBrowserWallet
+    ? connectors
+    : connectors.filter((c) => c.id !== 'injected')
 
   const handleSubmitClaim = async () => {
     if (!address || isSubmitting) return
@@ -1774,20 +1782,49 @@ function WalletClaimFormInner(props: {
   }
 
   if (!isConnected) {
+    const friendlyConnectError = connectError
+      ? getFriendlyConnectError(connectError, hasBrowserWallet)
+      : null
+
     return (
       <>
-        <Col className="items-center gap-4">
-          <Button
-            color="gradient"
-            size="xl"
-            className="w-full"
-            onClick={() => setShowWalletModal(true)}
-          >
-            🔗 Connect Wallet
-          </Button>
-          {connectError && (
-            <p className="text-scarlet-500 text-sm">{connectError.message}</p>
+        <Col className="gap-4">
+          {!hasBrowserWallet && (
+            <NoWalletDetectedBanner />
           )}
+
+          <Col className="items-center gap-2">
+            <Button
+              color="gradient"
+              size="xl"
+              className="w-full"
+              onClick={() => setShowWalletModal(true)}
+            >
+              🔗 Connect Wallet
+            </Button>
+            {friendlyConnectError && (
+              <div className="w-full rounded-lg border border-scarlet-200 bg-scarlet-50 p-3 dark:border-scarlet-800 dark:bg-scarlet-950/30">
+                <p className="text-scarlet-700 dark:text-scarlet-300 text-sm font-medium">
+                  {friendlyConnectError.title}
+                </p>
+                {friendlyConnectError.description && (
+                  <p className="text-scarlet-600 dark:text-scarlet-400 mt-1 text-sm">
+                    {friendlyConnectError.description}
+                  </p>
+                )}
+                {friendlyConnectError.showInstallLink && (
+                  <a
+                    href="https://metamask.io/download"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-scarlet-700 dark:text-scarlet-300 mt-2 inline-block text-sm font-semibold underline"
+                  >
+                    Install MetaMask →
+                  </a>
+                )}
+              </div>
+            )}
+          </Col>
         </Col>
 
         {/* Wallet Selection Modal */}
@@ -1805,27 +1842,54 @@ function WalletClaimFormInner(props: {
               </p>
             </Col>
 
-            <div className="grid grid-cols-2 gap-2">
-              {sortConnectors(connectors).map((connector) => (
-                <button
-                  key={connector.uid}
-                  onClick={() => {
-                    connect({ connector })
-                    setShowWalletModal(false)
-                  }}
-                  disabled={isConnecting}
-                  className={clsx(
-                    'bg-canvas-50 hover:bg-canvas-100 border-canvas-100 rounded-lg border px-3 py-2 text-center transition-all',
-                    'hover:border-primary-300 hover:shadow-sm',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
+            {!hasBrowserWallet && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+                <p className="text-amber-800 dark:text-amber-300 text-sm font-medium">
+                  No browser wallet detected
+                </p>
+                <p className="text-amber-700 dark:text-amber-400 mt-1 text-xs">
+                  You need a wallet browser extension (like MetaMask) to
+                  receive your prize. Desktop apps like OneKey won't work on
+                  their own — install the browser extension too.
+                </p>
+                <a
+                  href="https://metamask.io/download"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-800 dark:text-amber-300 mt-2 inline-block text-xs font-semibold underline"
                 >
-                  <span className="text-ink-900 text-sm font-medium">
-                    {simplifyWalletName(connector.name)}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  Install MetaMask →
+                </a>
+              </div>
+            )}
+
+            {availableConnectors.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {sortConnectors(availableConnectors).map((connector) => (
+                  <button
+                    key={connector.uid}
+                    onClick={() => {
+                      connect({ connector })
+                      setShowWalletModal(false)
+                    }}
+                    disabled={isConnecting}
+                    className={clsx(
+                      'bg-canvas-50 hover:bg-canvas-100 border-canvas-100 rounded-lg border px-3 py-2 text-center transition-all',
+                      'hover:border-primary-300 hover:shadow-sm',
+                      'disabled:cursor-not-allowed disabled:opacity-50'
+                    )}
+                  >
+                    <span className="text-ink-900 text-sm font-medium">
+                      {simplifyWalletName(connector.name)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-ink-500 text-center text-sm">
+                Install a browser wallet extension to continue.
+              </p>
+            )}
 
             <p className="text-ink-400 text-center text-xs">
               By connecting, you agree to receive USDC on Ethereum mainnet
@@ -1871,6 +1935,112 @@ function WalletClaimFormInner(props: {
       </Button>
     </Col>
   )
+}
+
+// Detect whether any real browser-extension wallet is installed. Wagmi's
+// generic `injected()` connector is always present, so we look for either an
+// EIP-6963-detected connector (id !== 'injected') or `window.ethereum`.
+function useHasBrowserWallet(connectors: readonly { id: string }[]): boolean {
+  const [hasWindowEth, setHasWindowEth] = useState(false)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setHasWindowEth(!!(window as any).ethereum)
+    }
+  }, [])
+  const hasDetectedWallet = connectors.some(
+    (c) => c.id !== 'injected' && c.id !== 'walletConnect'
+  )
+  return hasDetectedWallet || hasWindowEth
+}
+
+// Shown above the Connect Wallet button when no browser-extension wallet is
+// detected. Instructs users to install MetaMask.
+function NoWalletDetectedBanner() {
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+      <Col className="gap-2">
+        <Row className="items-center gap-2">
+          <span className="text-lg">🦊</span>
+          <span className="text-amber-900 dark:text-amber-200 font-semibold">
+            You'll need a crypto wallet to claim
+          </span>
+        </Row>
+        <p className="text-amber-800 dark:text-amber-300 text-sm">
+          We didn't detect a wallet browser extension. Install MetaMask (or
+          another Ethereum wallet extension) in your browser, then come back
+          and click Connect Wallet.
+        </p>
+        <p className="text-amber-700 dark:text-amber-400 text-xs">
+          Note: desktop-only apps like OneKey's .exe don't work here unless
+          you also install their browser extension.
+        </p>
+        <Row className="mt-1 flex-wrap gap-3">
+          <a
+            href="https://metamask.io/download"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-700"
+          >
+            Install MetaMask →
+          </a>
+          <a
+            href="https://ethereum.org/en/wallets/find-wallet/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-amber-800 dark:text-amber-300 text-xs font-medium underline"
+          >
+            Browse other wallets
+          </a>
+        </Row>
+      </Col>
+    </div>
+  )
+}
+
+// Translate cryptic viem/wagmi connection errors into friendly, actionable
+// guidance for end users.
+function getFriendlyConnectError(
+  error: Error,
+  hasBrowserWallet: boolean
+): {
+  title: string
+  description?: string
+  showInstallLink: boolean
+} {
+  const msg = error.message?.toLowerCase() ?? ''
+
+  if (!hasBrowserWallet) {
+    return {
+      title: "We couldn't connect to a wallet",
+      description:
+        'No browser wallet extension was detected. Install MetaMask and refresh this page.',
+      showInstallLink: true,
+    }
+  }
+
+  if (msg.includes('user rejected') || msg.includes('user denied')) {
+    return {
+      title: 'Connection cancelled',
+      description:
+        'You declined the connection in your wallet. Click Connect Wallet and approve the request to continue.',
+      showInstallLink: false,
+    }
+  }
+
+  if (msg.includes('no provider') || msg.includes('not found')) {
+    return {
+      title: 'No wallet provider found',
+      description:
+        'Your browser doesn\'t have a wallet extension installed or enabled.',
+      showInstallLink: true,
+    }
+  }
+
+  return {
+    title: 'Failed to connect',
+    description: error.message,
+    showInstallLink: false,
+  }
 }
 
 // Helper to simplify wallet names
