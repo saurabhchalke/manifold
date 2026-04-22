@@ -60,17 +60,27 @@ function StockManagement() {
     const item = getShopItem(itemId)
     const currentlyOut = outOfStockSet.has(itemId)
     const message = currentlyOut
-      ? `Enable sales for "${item?.name ?? itemId}"?\n\nThis will make the item available for purchase in the shop.`
-      : `Disable sales for "${item?.name ?? itemId}"?\n\nThis will mark the item as out of stock and prevent new purchases.`
+      ? `Enable sales for "${
+          item?.name ?? itemId
+        }"?\n\nThis will make the item available for purchase in the shop.`
+      : `Disable sales for "${
+          item?.name ?? itemId
+        }"?\n\nThis will mark the item as out of stock and prevent new purchases.`
     if (!confirm(message)) return
 
     setToggling(itemId)
     try {
       await api('toggle-merch-stock', { itemId })
-      toast.success(currentlyOut ? `${item?.name ?? itemId} is now in stock` : `${item?.name ?? itemId} marked out of stock`)
+      toast.success(
+        currentlyOut
+          ? `${item?.name ?? itemId} is now in stock`
+          : `${item?.name ?? itemId} marked out of stock`
+      )
       refresh()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to toggle stock status')
+      toast.error(
+        e instanceof Error ? e.message : 'Failed to toggle stock status'
+      )
     } finally {
       setToggling(null)
     }
@@ -96,7 +106,9 @@ function StockManagement() {
               <Row className="items-center gap-3">
                 <span
                   className={
-                    isOutOfStock ? 'text-sm text-red-600' : 'text-sm text-green-600'
+                    isOutOfStock
+                      ? 'text-sm text-red-600'
+                      : 'text-sm text-green-600'
                   }
                 >
                   {isOutOfStock ? 'Out of Stock' : 'In Stock'}
@@ -137,7 +149,9 @@ function OrderManagement() {
       !confirm(
         `Cancel order for @${username}?\n\nItem: ${itemName}\nRefund: ${formatMoney(
           amount
-        )}\nPrintful: ${printfulOrderId ?? '\u2014'}\n\nThis will refund the full amount to the user and cancel the draft on Printful.`
+        )}\nPrintful: ${
+          printfulOrderId ?? '\u2014'
+        }\n\nThis will refund the full amount to the user and cancel the draft on Printful.`
       )
     )
       return
@@ -145,7 +159,9 @@ function OrderManagement() {
     try {
       const result = await api('cancel-merch-order', { orderId })
       toast.success(
-        `Order canceled. Refunded ${formatMoney(result.refundedAmount)} to @${username}`
+        `Order canceled. Refunded ${formatMoney(
+          result.refundedAmount
+        )} to @${username}`
       )
       refresh()
     } catch (e: unknown) {
@@ -171,7 +187,10 @@ function OrderManagement() {
           <span className="text-ink-500 self-center text-sm">
             {total === 0
               ? '0'
-              : `${offset + 1}\u2013${Math.min(offset + limit, total)} of ${total}`}
+              : `${offset + 1}\u2013${Math.min(
+                  offset + limit,
+                  total
+                )} of ${total}`}
           </span>
           <Button
             size="xs"
@@ -234,9 +253,7 @@ function OrderRow(props: {
   // Build a short variant suffix from order.metadata (populated on new orders
   // since the wordmark-tshirt commit). Skipped for single-variant items where
   // 'One Size' would be noise. Legacy orders pre-metadata show no suffix.
-  const meta = order.metadata as
-    | { size?: string; color?: string }
-    | undefined
+  const meta = order.metadata as { size?: string; color?: string } | undefined
   const variantLabel = meta?.color
     ? `${meta.color} / ${meta.size ?? '?'}`
     : meta?.size && meta.size !== 'One Size'

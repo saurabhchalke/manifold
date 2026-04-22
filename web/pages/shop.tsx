@@ -1549,10 +1549,10 @@ function MerchItemCard(props: {
 
   // Per-colour image carousel takes precedence when set; falls back to the
   // shared `merchImages` for single-colour items.
-  const images =
-    (hasColors && selectedColor && item.merchImagesByColor?.[selectedColor]) ||
-    item.merchImages ||
-    [{ label: 'Front', url: item.imageUrl || '' }]
+  const images = (hasColors &&
+    selectedColor &&
+    item.merchImagesByColor?.[selectedColor]) ||
+    item.merchImages || [{ label: 'Front', url: item.imageUrl || '' }]
   // Reset the carousel when the user swaps colours so they always start on
   // the new colour's first image.
   useEffect(() => {
@@ -1670,183 +1670,185 @@ function MerchItemCard(props: {
               : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-200/50 hover:ring-2 hover:ring-indigo-500 dark:hover:shadow-indigo-900/30'
           )}
         >
-        {outOfStock && (
-          <div className="absolute right-2 top-2 z-10 rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
-            Out of Stock
-          </div>
-        )}
-        {alreadyPurchased && !outOfStock && (
-          <div className="absolute right-2 top-2 z-10 rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
-            Purchased
-          </div>
-        )}
-        {item.hidden && !outOfStock && !alreadyPurchased && (
-          <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
-            Hidden
-          </div>
-        )}
-
-        {/* Image carousel */}
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-          <img
-            src={images[currentImageIndex].url}
-            alt={`${item.name} - ${images[currentImageIndex].label}`}
-            className="h-full w-full object-contain p-2"
-          />
-          <Row className="absolute bottom-2 left-1/2 -translate-x-1/2 gap-1.5">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
-                className={clsx(
-                  'h-2 w-2 rounded-full transition-all',
-                  currentImageIndex === idx
-                    ? 'w-4 bg-indigo-500'
-                    : 'bg-white/70 hover:bg-white'
-                )}
-              />
-            ))}
-          </Row>
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={() =>
-                  setCurrentImageIndex((i) =>
-                    i === 0 ? images.length - 1 : i - 1
-                  )
-                }
-                className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() =>
-                  setCurrentImageIndex((i) =>
-                    i === images.length - 1 ? 0 : i + 1
-                  )
-                }
-                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </button>
-            </>
+          {outOfStock && (
+            <div className="absolute right-2 top-2 z-10 rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400">
+              Out of Stock
+            </div>
           )}
-        </div>
+          {alreadyPurchased && !outOfStock && (
+            <div className="absolute right-2 top-2 z-10 rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400">
+              Purchased
+            </div>
+          )}
+          {item.hidden && !outOfStock && !alreadyPurchased && (
+            <div className="absolute right-2 top-2 z-10 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
+              Hidden
+            </div>
+          )}
 
-        {/* Title and description */}
-        <div className="text-base font-semibold sm:text-lg">{item.name}</div>
-        <p className="text-ink-600 text-sm">{item.description}</p>
+          {/* Image carousel */}
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+            <img
+              src={images[currentImageIndex].url}
+              alt={`${item.name} - ${images[currentImageIndex].label}`}
+              className="h-full w-full object-contain p-2"
+            />
+            <Row className="absolute bottom-2 left-1/2 -translate-x-1/2 gap-1.5">
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className={clsx(
+                    'h-2 w-2 rounded-full transition-all',
+                    currentImageIndex === idx
+                      ? 'w-4 bg-indigo-500'
+                      : 'bg-white/70 hover:bg-white'
+                  )}
+                />
+              ))}
+            </Row>
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={() =>
+                    setCurrentImageIndex((i) =>
+                      i === 0 ? images.length - 1 : i - 1
+                    )
+                  }
+                  className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentImageIndex((i) =>
+                      i === images.length - 1 ? 0 : i + 1
+                    )
+                  }
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
 
-        {/* Colour selector — shown only when the item has multiple colours.
+          {/* Title and description */}
+          <div className="text-base font-semibold sm:text-lg">{item.name}</div>
+          <p className="text-ink-600 text-sm">{item.description}</p>
+
+          {/* Colour selector — shown only when the item has multiple colours.
             Same flex-wrap pattern as the size row below. Each colour swap
             updates the image carousel and re-filters the available sizes. */}
-        {hasColors && (
-          <Row className="flex-wrap items-center gap-1.5">
-            <span className="text-ink-600 mr-1 text-sm font-medium">
-              Colour:
-            </span>
-            {colors.map((color) => (
-              <button
-                key={color}
-                onClick={() => setSelectedColor(color)}
-                className={clsx(
-                  'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
-                  selectedColor === color
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
-                    : 'border-ink-200 hover:border-ink-400 text-ink-700'
-                )}
-              >
-                {color}
-              </button>
-            ))}
-          </Row>
-        )}
+          {hasColors && (
+            <Row className="flex-wrap items-center gap-1.5">
+              <span className="text-ink-600 mr-1 text-sm font-medium">
+                Colour:
+              </span>
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={clsx(
+                    'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
+                    selectedColor === color
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                      : 'border-ink-200 hover:border-ink-400 text-ink-700'
+                  )}
+                >
+                  {color}
+                </button>
+              ))}
+            </Row>
+          )}
 
-        {/* Size selector (hidden for single-variant items like one-size caps).
+          {/* Size selector (hidden for single-variant items like one-size caps).
             Label + buttons share one flex-wrap row so the first few sizes sit
             inline with "Size:" and only the overflow wraps onto line 2. */}
-        {!singleVariant && (
-          <Row className="flex-wrap items-center gap-1.5">
-            <span className="text-ink-600 mr-1 text-sm font-medium">Size:</span>
-            {sizesForSelection.map((variant) => (
-              <button
-                key={variant.size}
-                onClick={() => setSelectedSize(variant.size)}
-                className={clsx(
-                  'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
-                  selectedSize === variant.size
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
-                    : 'border-ink-200 hover:border-ink-400 text-ink-700'
-                )}
-              >
-                {variant.size}
-              </button>
-            ))}
-          </Row>
-        )}
+          {!singleVariant && (
+            <Row className="flex-wrap items-center gap-1.5">
+              <span className="text-ink-600 mr-1 text-sm font-medium">
+                Size:
+              </span>
+              {sizesForSelection.map((variant) => (
+                <button
+                  key={variant.size}
+                  onClick={() => setSelectedSize(variant.size)}
+                  className={clsx(
+                    'rounded-md border px-2 py-0.5 text-xs font-medium transition-all',
+                    selectedSize === variant.size
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                      : 'border-ink-200 hover:border-ink-400 text-ink-700'
+                  )}
+                >
+                  {variant.size}
+                </button>
+              ))}
+            </Row>
+          )}
 
-        {/* Price block + full-width buy button stacked below.
+          {/* Price block + full-width buy button stacked below.
             Keeps the 3-wide grid readable — the old side-by-side layout
             crammed the pricing into ~half a card and wrapped the button
             text. Strikethrough original price sits ABOVE the discounted
             price, matching the regular ShopItemCard layout. */}
-        <Col className="border-ink-200 mt-auto gap-2 border-t pt-3">
-          <Col className="gap-0.5">
-            {hasDiscount && (
-              <span className="text-ink-400 text-xs line-through">
-                {formatMoney(item.price)}
-              </span>
-            )}
-            <div className="text-lg font-bold text-teal-600">
-              {hasDiscount
-                ? formatMoney(discountedPrice)
-                : formatMoney(item.price)}
+          <Col className="border-ink-200 mt-auto gap-2 border-t pt-3">
+            <Col className="gap-0.5">
               {hasDiscount && (
-                <span className="ml-1 text-xs text-green-600">
-                  ({Math.round(shopDiscount * 100)}% off)
+                <span className="text-ink-400 text-xs line-through">
+                  {formatMoney(item.price)}
                 </span>
               )}
-            </div>
-            <span className="text-ink-500 text-xs">
-              + shipping (paid in mana)
-            </span>
-            {item.limit === 'one-time' && (
-              <Row className="text-ink-500 mt-0.5 items-center gap-1 text-xs">
-                <span>Limit 1 per customer</span>
-                <InfoTooltip
-                  text="Can't get enough? Keep an eye out for new merch drops!"
-                  size="sm"
-                />
-              </Row>
+              <div className="text-lg font-bold text-teal-600">
+                {hasDiscount
+                  ? formatMoney(discountedPrice)
+                  : formatMoney(item.price)}
+                {hasDiscount && (
+                  <span className="ml-1 text-xs text-green-600">
+                    ({Math.round(shopDiscount * 100)}% off)
+                  </span>
+                )}
+              </div>
+              <span className="text-ink-500 text-xs">
+                + shipping (paid in mana)
+              </span>
+              {item.limit === 'one-time' && (
+                <Row className="text-ink-500 mt-0.5 items-center gap-1 text-xs">
+                  <span>Limit 1 per customer</span>
+                  <InfoTooltip
+                    text="Can't get enough? Keep an eye out for new merch drops!"
+                    size="sm"
+                  />
+                </Row>
+              )}
+            </Col>
+            {outOfStock ? (
+              <Button size="sm" color="gray" disabled className="w-full">
+                Out of Stock
+              </Button>
+            ) : alreadyPurchased ? (
+              <Button size="sm" color="gray" disabled className="w-full">
+                Purchased
+              </Button>
+            ) : !canPurchase && user ? (
+              <Link href="/checkout" className="w-full">
+                <Button size="sm" color="gradient-pink" className="w-full">
+                  Buy mana
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="sm"
+                color="indigo"
+                disabled={!user || !selectedSize}
+                onClick={handleBuyClick}
+                className="w-full"
+              >
+                {selectedSize ? 'Buy' : 'Select a size'}
+              </Button>
             )}
           </Col>
-          {outOfStock ? (
-            <Button size="sm" color="gray" disabled className="w-full">
-              Out of Stock
-            </Button>
-          ) : alreadyPurchased ? (
-            <Button size="sm" color="gray" disabled className="w-full">
-              Purchased
-            </Button>
-          ) : !canPurchase && user ? (
-            <Link href="/checkout" className="w-full">
-              <Button size="sm" color="gradient-pink" className="w-full">
-                Buy mana
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              size="sm"
-              color="indigo"
-              disabled={!user || !selectedSize}
-              onClick={handleBuyClick}
-              className="w-full"
-            >
-              {selectedSize ? 'Buy' : 'Select a size'}
-            </Button>
-          )}
-        </Col>
-      </Card>
+        </Card>
       </div>
 
       {/* Purchase confirmation modal */}
@@ -2213,8 +2215,8 @@ function MerchItemCard(props: {
             <span className="text-amber-700 dark:text-amber-300">
               I understand that orders are final once confirmed with our
               fulfillment partner. Refunds may be issued at admin discretion
-              before an order ships. Mana spent on merch is non-refundable
-              after shipment.
+              before an order ships. Mana spent on merch is non-refundable after
+              shipment.
             </span>
           </label>
 
