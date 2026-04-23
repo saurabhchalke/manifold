@@ -335,8 +335,8 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
     return (
       <Page trackPageView={'charity giveaway'}>
         <SEO
-          title="Charity Giveaway"
-          description="Get entries for your favorite charity to win $1,000!"
+          title="Manifold Charity Giveaway"
+          description="Enter the Manifold Charity Giveaway to help your favorite charity win a cash donation from Manifold."
           url="/charity"
         />
         <Col className="mx-auto w-full max-w-3xl items-center justify-center gap-6 px-4 py-20">
@@ -375,9 +375,13 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
   return (
     <Page trackPageView={'charity giveaway'}>
       <SEO
-        title="Manifold Charity Giveaway"
-        description="Get entries for your favorite charity to win $1,000!"
-        url="/charity"
+        title={
+          giveaway.giveawayNum
+            ? `Manifold Charity Giveaway #${giveaway.giveawayNum}`
+            : 'Manifold Charity Giveaway'
+        }
+        description={`Help your favorite charity win $${giveaway.prizeAmountUsd.toLocaleString()} from Manifold. Convert mana into entries to boost their odds.`}
+        url={giveawayNum ? `/charity/${giveaway.giveawayNum}` : '/charity'}
       />
 
       <Col className="mx-auto w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
