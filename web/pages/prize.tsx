@@ -353,8 +353,9 @@ export default function SweepstakesPage({
       <Page trackPageView={'prize-drawing'}>
         <SEO
           title="Manifold Prize Drawing"
-          description="Enter for a chance to win USDC prizes!"
+          description="Win real USDC in Manifold's prize drawing. No purchase necessary."
           url="/prize"
+          image="/prize-drawing-og.png"
         />
         <Col className="mx-auto w-full max-w-3xl items-center justify-center gap-6 px-4 py-20">
           <h1 className="text-ink-900 text-2xl font-semibold">
@@ -391,9 +392,16 @@ export default function SweepstakesPage({
   return (
     <Page trackPageView={'prize-drawing'}>
       <SEO
-        title="Manifold Prize Drawing"
-        description={`Enter for a chance to win $${totalPrizePool.toLocaleString()} in USDC prizes!`}
-        url="/prize"
+        title={
+          sweepstakes.sweepstakesNum
+            ? `Manifold Prize Drawing #${sweepstakes.sweepstakesNum}`
+            : 'Manifold Prize Drawing'
+        }
+        description={`Win $${totalPrizePool.toLocaleString()} in USDC in Manifold's prize drawing. No purchase necessary.`}
+        url={
+          sweepstakesNum ? `/prize/${sweepstakes.sweepstakesNum}` : '/prize'
+        }
+        image="/prize-drawing-og.png"
       />
 
       <Col className="mx-auto w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
