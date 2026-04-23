@@ -39,6 +39,7 @@ import { UserHovercard } from 'web/components/user/user-hovercard'
 import { Countdown } from 'web/components/widgets/countdown'
 import { InfoTooltip } from 'web/components/widgets/info-tooltip'
 import { LoadingIndicator } from 'web/components/widgets/loading-indicator'
+import { SelectDropdown } from 'web/components/widgets/select-dropdown'
 import { useEffectCheckEquality } from 'web/hooks/use-effect-check-equality'
 import { useUser } from 'web/hooks/use-user'
 import { useUsers } from 'web/hooks/use-user-supabase'
@@ -247,17 +248,15 @@ export default function Leagues(props: LeaguesProps) {
         {/* Season Status Bar */}
         <div className="border-ink-200 rounded-lg border px-4 py-3">
           <Row className="flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <select
-              className="bg-canvas-0 border-ink-200 text-ink-600 focus:border-primary-500 focus:ring-primary-500 rounded border px-2 py-1 text-sm focus:outline-none focus:ring-1"
+            <SelectDropdown<number>
+              aria-label="Select season"
               value={season}
-              onChange={(e) => onSetSeason(+e.target.value)}
-            >
-              {seasons.map((s) => (
-                <option key={s} value={s}>
-                  Season {s}: {getSeasonMonth(s)}
-                </option>
-              ))}
-            </select>
+              onChange={onSetSeason}
+              options={seasons.map((s) => ({
+                value: s,
+                label: `Season ${s}: ${getSeasonMonth(s)}`,
+              }))}
+            />
             <Row className="items-center gap-2">
               <ClockIcon className="text-ink-400 h-4 w-4" />
               {closingPeriod ? (
@@ -340,18 +339,15 @@ export default function Leagues(props: LeaguesProps) {
             {/* Cohort Selector */}
             <Row className="items-center gap-3">
               <span className="text-ink-500 text-sm">Group:</span>
-              <select
-                className="bg-canvas-0 border-ink-200 text-ink-700 focus:border-primary-500 focus:ring-primary-500 rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-1"
+              <SelectDropdown<string>
+                aria-label="Select group"
                 value={cohort}
-                onChange={(e) => onSetCohort(e.target.value)}
-              >
-                {divisionToCohorts[division]?.map((c) => (
-                  <option key={c} value={c}>
-                    {c === userCohort ? '★ ' : ''}
-                    {toLabel(c)}
-                  </option>
-                ))}
-              </select>
+                onChange={onSetCohort}
+                options={(divisionToCohorts[division] ?? []).map((c) => ({
+                  value: c,
+                  label: `${c === userCohort ? '★ ' : ''}${toLabel(c)}`,
+                }))}
+              />
             </Row>
           </Col>
         )}

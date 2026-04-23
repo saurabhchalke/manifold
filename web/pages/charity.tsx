@@ -12,6 +12,7 @@ import { useUser } from 'web/hooks/use-user'
 import { useAdmin } from 'web/hooks/use-admin'
 import { api, APIError } from 'web/lib/api/api'
 import { Select } from 'web/components/widgets/select'
+import { SelectDropdown } from 'web/components/widgets/select-dropdown'
 import { Button } from 'web/components/buttons/button'
 import { Input } from 'web/components/widgets/input'
 import { Avatar } from 'web/components/widgets/avatar'
@@ -385,29 +386,24 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
             </h1>
             <div className="ml-auto flex items-center gap-2">
               {giveawayList.length > 1 && (
-                <div className="relative">
-                  <select
-                    value={String(giveaway.giveawayNum)}
-                    onChange={(e) => {
-                      const nextNum = Number(e.target.value)
-                      if (
-                        activeGiveaway &&
-                        nextNum === activeGiveaway.giveawayNum
-                      ) {
-                        router.push('/charity')
-                      } else {
-                        router.push(`/charity/${nextNum}`)
-                      }
-                    }}
-                    className="bg-canvas-50 border-canvas-200 text-ink-700 appearance-none rounded-md border px-2 py-1 pr-7 text-sm"
-                  >
-                    {giveawayList.map((g) => (
-                      <option key={g.giveawayNum} value={g.giveawayNum}>
-                        {`Giveaway #${g.giveawayNum}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <SelectDropdown
+                  aria-label="Select charity giveaway"
+                  value={giveaway.giveawayNum}
+                  options={giveawayList.map((g) => ({
+                    value: g.giveawayNum,
+                    label: `Giveaway #${g.giveawayNum}`,
+                  }))}
+                  onChange={(nextNum) => {
+                    if (
+                      activeGiveaway &&
+                      nextNum === activeGiveaway.giveawayNum
+                    ) {
+                      router.push('/charity')
+                    } else {
+                      router.push(`/charity/${nextNum}`)
+                    }
+                  }}
+                />
               )}
               {isAdmin &&
                 isClosed &&

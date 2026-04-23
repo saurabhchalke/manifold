@@ -82,6 +82,7 @@ import {
   DisguiseOnAvatar,
 } from 'web/components/widgets/avatar'
 import { Card } from 'web/components/widgets/card'
+import { SelectDropdown } from 'web/components/widgets/select-dropdown'
 import { InfoTooltip } from 'web/components/widgets/info-tooltip'
 import { FullscreenConfetti } from 'web/components/widgets/fullscreen-confetti'
 import { usePrivateUser, useUser } from 'web/hooks/use-user'
@@ -790,18 +791,20 @@ export default function ShopPage() {
         {/* Header and sort dropdown */}
         <Row className="mb-2 mt-8 items-center justify-between">
           <span className="text-lg font-semibold">Digital goods & more</span>
-          <select
+          <SelectDropdown<SortOption>
+            aria-label="Sort items"
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as SortOption)}
-            className="bg-canvas-0 border-ink-300 text-ink-700 rounded-md border px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="default">Default order</option>
-            <option value="category">Category</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="name-asc">Name: A to Z</option>
-            <option value="name-desc">Name: Z to A</option>
-          </select>
+            onChange={setSortOption}
+            options={[
+              { value: 'default', label: 'Default order' },
+              { value: 'category', label: 'Category' },
+              { value: 'price-asc', label: 'Price: Low to High' },
+              { value: 'price-desc', label: 'Price: High to Low' },
+              { value: 'name-asc', label: 'Name: A to Z' },
+              { value: 'name-desc', label: 'Name: Z to A' },
+            ]}
+            anchor={{ to: 'bottom end', gap: 4, padding: 4 }}
+          />
         </Row>
 
         {/* Category filter pills — only show tabs that have visible items */}

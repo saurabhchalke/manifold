@@ -13,6 +13,7 @@ import { useAdmin } from 'web/hooks/use-admin'
 import { api, APIError } from 'web/lib/api/api'
 import { Button } from 'web/components/buttons/button'
 import { Input } from 'web/components/widgets/input'
+import { SelectDropdown } from 'web/components/widgets/select-dropdown'
 import { Avatar } from 'web/components/widgets/avatar'
 import { UserLink } from 'web/components/widgets/user-link'
 import { RelativeTimestamp } from 'web/components/relative-timestamp'
@@ -401,29 +402,24 @@ export default function SweepstakesPage({
             </h1>
             <div className="ml-auto flex items-center gap-2">
               {sweepstakesList.length > 1 && (
-                <div className="relative">
-                  <select
-                    value={String(sweepstakes.sweepstakesNum)}
-                    onChange={(e) => {
-                      const nextNum = Number(e.target.value)
-                      if (
-                        activeSweepstakes &&
-                        nextNum === activeSweepstakes.sweepstakesNum
-                      ) {
-                        router.push('/prize')
-                      } else {
-                        router.push(`/prize/${nextNum}`)
-                      }
-                    }}
-                    className="bg-canvas-50 border-canvas-200 text-ink-700 appearance-none rounded-md border px-2 py-1 pr-7 text-sm"
-                  >
-                    {sweepstakesList.map((s) => (
-                      <option key={s.sweepstakesNum} value={s.sweepstakesNum}>
-                        {`Drawing #${s.sweepstakesNum}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <SelectDropdown
+                  aria-label="Select prize drawing"
+                  value={sweepstakes.sweepstakesNum}
+                  options={sweepstakesList.map((s) => ({
+                    value: s.sweepstakesNum,
+                    label: `Drawing #${s.sweepstakesNum}`,
+                  }))}
+                  onChange={(nextNum) => {
+                    if (
+                      activeSweepstakes &&
+                      nextNum === activeSweepstakes.sweepstakesNum
+                    ) {
+                      router.push('/prize')
+                    } else {
+                      router.push(`/prize/${nextNum}`)
+                    }
+                  }}
+                />
               )}
               {isAdmin &&
                 isClosed &&
