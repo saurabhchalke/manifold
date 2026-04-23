@@ -385,3 +385,25 @@ export const PrizeDrawingBanner = () => {
     </Banner>
   )
 }
+
+export const PrizeDrawing2Banner = () => {
+  const [showBanner, hideBanner] = useBanner('prize-drawing-2-banner')
+  if (!showBanner) return null
+  return (
+    <Banner
+      className="items-center bg-gradient-to-r from-amber-100 via-yellow-100 to-indigo-100 py-2 transition-colors hover:from-amber-200 hover:via-yellow-200 hover:to-indigo-200 dark:from-amber-900/30 dark:via-yellow-900/30 dark:to-indigo-900/30 dark:hover:from-amber-900/50 dark:hover:via-yellow-900/50 dark:hover:to-indigo-900/50"
+      link="/prize/2"
+      target="_self"
+      setShowBanner={hideBanner}
+    >
+      <Row className="items-center gap-2">
+        <span>🎁</span>
+        <div className="text-ink-700">
+          <span className="font-semibold">Prize Drawing #2 is live!</span> Win
+          $10,000 in prizes
+        </div>
+        <ArrowRightIcon className="text-ink-600 ml-1 h-4 w-4" />
+      </Row>
+    </Banner>
+  )
+}

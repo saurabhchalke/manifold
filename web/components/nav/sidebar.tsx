@@ -46,7 +46,7 @@ import { NavItem, SidebarItem } from './sidebar-item'
 
 export const SPEND_MANA_ENABLED = true
 
-// Set to true to show a "Manifest" badge on the Shop nav item (early-bird tickets)
+// Set to true to show a "$10k prize" badge on the Shop nav item (Prize Drawing #2)
 const SHOW_SHOP_MANIFEST_BADGE = true
 
 // Newest visibleSinceTime across all visible items. The sidebar NEW badge
@@ -305,7 +305,7 @@ const getDesktopNav = (
               ) : (
                 SHOW_SHOP_MANIFEST_BADGE && (
                   <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
-                    Manifest
+                    $10k prize
                   </span>
                 )
               )}
@@ -388,7 +388,7 @@ const getMobileNav = (
             ) : (
               SHOW_SHOP_MANIFEST_BADGE && (
                 <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
-                  Manifest
+                  $10k prize
                 </span>
               )
             )}
