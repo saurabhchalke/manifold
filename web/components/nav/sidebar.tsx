@@ -347,7 +347,7 @@ const getMobileNav = (
         <>
           Prize Drawing
           <span className="ml-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-            $1k
+            $10k
           </span>
         </>
       ),
@@ -370,30 +370,21 @@ const getMobileNav = (
       href: '/reports',
       icon: ReportsIcon,
     },
-    // Show shop when enabled OR for admins (testing)
+    // Show shop when enabled OR for admins (testing). On mobile we omit the
+    // "$10k prize" pill because the Prize Drawing tab above already advertises
+    // it — the duplicate is redundant in the vertical mobile nav.
     (SPEND_MANA_ENABLED || isAdminOrMod) && {
       name: 'Shop',
       href: '/shop',
       icon: LuGem,
-      children:
-        showShopNewBadge || SHOW_SHOP_MANIFEST_BADGE ? (
-          <>
-            Shop
-            {/* NEW takes priority over Manifest — Manifest reappears once
-                the user has cleared the NEW badge by visiting /shop. */}
-            {showShopNewBadge ? (
-              <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-                NEW
-              </span>
-            ) : (
-              SHOW_SHOP_MANIFEST_BADGE && (
-                <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
-                  $10k prize
-                </span>
-              )
-            )}
-          </>
-        ) : undefined,
+      children: showShopNewBadge ? (
+        <>
+          Shop
+          <span className="ml-2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
+            NEW
+          </span>
+        </>
+      ) : undefined,
     }
   )
 }
