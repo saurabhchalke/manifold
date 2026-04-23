@@ -1,4 +1,8 @@
-import { formatMoney, formatMoneyWithDecimals } from 'common/util/format'
+import {
+  formatMoney,
+  formatMoneyAuto,
+  formatMoneyWithDecimals,
+} from 'common/util/format'
 import { sortBy } from 'lodash'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
@@ -1439,7 +1443,7 @@ function SaleRow(props: {
         )}
       </td>
       <td className="text-ink-600 px-5 py-4 text-right text-sm tabular-nums">
-        {sale.isFree ? 'Free' : formatMoney(sale.manaSpent)}
+        {sale.isFree ? 'Free' : formatMoneyAuto(sale.manaSpent)}
       </td>
       <td className="text-ink-400 px-5 py-4 text-right text-sm">
         <RelativeTimestamp time={sale.createdTime} />

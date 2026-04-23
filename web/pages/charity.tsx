@@ -1,5 +1,9 @@
 import { charities } from 'common/charity'
-import { formatMoney, formatMoneyWithDecimals } from 'common/util/format'
+import {
+  formatMoney,
+  formatMoneyAuto,
+  formatMoneyWithDecimals,
+} from 'common/util/format'
 import { sortBy } from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -1189,7 +1193,7 @@ function SaleRow(props: {
         {formatEntries(sale.numTickets)}
       </td>
       <td className="text-ink-600 px-5 py-4 text-right text-sm tabular-nums">
-        {formatMoney(sale.manaSpent)}
+        {formatMoneyAuto(sale.manaSpent)}
       </td>
       <td className="text-ink-400 px-5 py-4 text-right text-sm">
         <RelativeTimestamp time={sale.createdTime} />
