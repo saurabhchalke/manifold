@@ -398,9 +398,7 @@ export default function SweepstakesPage({
             : 'Manifold Prize Drawing'
         }
         description={`Win $${totalPrizePool.toLocaleString()} in USDC in Manifold's prize drawing. No purchase necessary.`}
-        url={
-          sweepstakesNum ? `/prize/${sweepstakes.sweepstakesNum}` : '/prize'
-        }
+        url={sweepstakesNum ? `/prize/${sweepstakes.sweepstakesNum}` : '/prize'}
         image="/prize-drawing-og.png"
       />
 
