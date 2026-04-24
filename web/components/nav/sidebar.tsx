@@ -54,7 +54,9 @@ function formatPrizePoolLabel(
   if (!Number.isFinite(total) || total <= 0) return undefined
   if (total < 1000) return `$${total}`
   const thousands = total / 1000
-  return `$${thousands.toLocaleString(undefined, { maximumFractionDigits: 1 })}k`
+  return `$${thousands.toLocaleString(undefined, {
+    maximumFractionDigits: 1,
+  })}k`
 }
 
 export const SPEND_MANA_ENABLED = true
