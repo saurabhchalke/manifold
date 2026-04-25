@@ -380,7 +380,7 @@ function CheckoutContent() {
                         'px-8 py-4 text-lg font-semibold shadow-sm transition-all duration-200',
                         'active:scale-[0.98]',
                         canUseCreditCard
-                          ? 'border-indigo-600 bg-canvas-0 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-950/30'
+                          ? 'bg-canvas-0 border-indigo-600 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-950/30'
                           : 'border-ink-300 bg-canvas-50 text-ink-500 dark:bg-canvas-100'
                       )}
                     >
