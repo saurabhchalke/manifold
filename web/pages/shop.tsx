@@ -2291,11 +2291,7 @@ function MerchItemCard(props: {
                 {shippingInfo.address1}
                 {shippingInfo.address2 && `, ${shippingInfo.address2}`}
                 <br />
-                {[
-                  shippingInfo.city,
-                  shippingInfo.state,
-                  shippingInfo.zip,
-                ]
+                {[shippingInfo.city, shippingInfo.state, shippingInfo.zip]
                   .filter(Boolean)
                   .join(', ')}
                 <br />
