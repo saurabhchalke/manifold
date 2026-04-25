@@ -25,10 +25,7 @@ import { DateTimeTooltip } from '../widgets/datetime-tooltip'
 import DropdownMenu from '../widgets/dropdown-menu'
 import { UserLink } from '../widgets/user-link'
 
-export function PostCard(props: {
-  post: TopLevelPost
-  className?: string
-}) {
+export function PostCard(props: { post: TopLevelPost; className?: string }) {
   const { post, className } = props
   const isAdminOrMod = useAdminOrMod()
   const currentUser = useUser()
