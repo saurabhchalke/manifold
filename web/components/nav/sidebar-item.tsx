@@ -16,6 +16,10 @@ export type NavItem = {
   alwaysShowName?: boolean
   prefetch?: boolean
   children?: React.ReactNode
+  /** Optional secondary label rendered next to `name` (hidden on very narrow viewports). */
+  subLabel?: string
+  /** Optional class applied to the nav item container (e.g. for tighter padding). */
+  itemClassName?: string
 }
 
 export function SidebarItem(props: { item: NavItem; currentPage?: string }) {

@@ -113,10 +113,12 @@ const signedOutNavigation = (prizePoolLabel: string | undefined) => [
     alwaysShowName: true,
   },
   {
-    name: prizePoolLabel ? `Prize ${prizePoolLabel}` : 'Prize',
+    name: 'Prize',
+    subLabel: prizePoolLabel,
     href: '/prize',
     icon: GiftIcon,
     solidIcon: GiftIconSolid,
+    itemClassName: '!px-1',
   },
   {
     name: 'Explore',
@@ -281,7 +283,12 @@ function NavBarItem(props: {
     return (
       <button
         type="button"
-        className={clsx(itemClass, touched && touchItemClass, className)}
+        className={clsx(
+          itemClass,
+          touched && touchItemClass,
+          className,
+          item.itemClassName
+        )}
         onClick={() => {
           track()
           item.onClick?.()
@@ -293,7 +300,7 @@ function NavBarItem(props: {
           <item.icon className={clsx(iconClassName, item.iconClassName)} />
         )}
         {children}
-        {item.name}
+        <NavItemLabel name={item.name} subLabel={item.subLabel} />
       </button>
     )
   }
@@ -314,7 +321,8 @@ function NavBarItem(props: {
         itemClass,
         touched && touchItemClass,
         isCurrentPage && selectedItemClass,
-        className
+        className,
+        item.itemClassName
       )}
       onClick={track}
       onTouchStart={() => setTouched(true)}
@@ -324,8 +332,20 @@ function NavBarItem(props: {
         <IconComponent className={clsx(iconClassName, item.iconClassName)} />
       )}
       {children}
-      {item.name}
+      <NavItemLabel name={item.name} subLabel={item.subLabel} />
     </Link>
+  )
+}
+
+function NavItemLabel(props: { name: string; subLabel?: string }) {
+  const { name, subLabel } = props
+  return (
+    <span className="whitespace-nowrap">
+      {name}
+      {subLabel && (
+        <span className="hidden min-[360px]:inline">&nbsp;{subLabel}</span>
+      )}
+    </span>
   )
 }
 
