@@ -1695,8 +1695,8 @@ function WinnerClaimSection(props: { sweepstakesNum: number; userId: string }) {
           address.{' '}
           <span className="font-semibold">
             Your submission is final and cannot be changed. The wallet you
-            choose applies only to this prize — you'll choose a wallet again
-            for any future prize.
+            choose applies only to this prize — you'll choose a wallet again for
+            any future prize.
           </span>
         </p>
 
@@ -1989,10 +1989,16 @@ type AddressValidation =
 function validateEthAddress(input: string): AddressValidation {
   if (input.length === 0) return { kind: 'empty' }
   if (!/^0x[a-fA-F0-9]*$/.test(input)) {
-    return { kind: 'invalid', message: '❌ This is not an Ethereum wallet address' }
+    return {
+      kind: 'invalid',
+      message: '❌ This is not an Ethereum wallet address',
+    }
   }
   if (input.length < 42) {
-    return { kind: 'incomplete', message: '⚠️ This wallet address is incomplete' }
+    return {
+      kind: 'incomplete',
+      message: '⚠️ This wallet address is incomplete',
+    }
   }
   if (input.length > 42) {
     return { kind: 'invalid', message: '❌ This wallet address is too long' }
@@ -2019,21 +2025,15 @@ function ManualWalletEntry(props: {
   onSuccess: () => void
   onCancel: () => void
 }) {
-  const {
-    sweepstakesNum,
-    isSubmitting,
-    setIsSubmitting,
-    onSuccess,
-    onCancel,
-  } = props
+  const { sweepstakesNum, isSubmitting, setIsSubmitting, onSuccess, onCancel } =
+    props
 
   const [address, setAddress] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
   const trimmed = address.trim()
   const validation = validateEthAddress(trimmed)
-  const canSubmit =
-    validation.kind === 'valid' && confirmed && !isSubmitting
+  const canSubmit = validation.kind === 'valid' && confirmed && !isSubmitting
 
   const normalize = (raw: string) => raw.trim().replace(/^0X/, '0x')
 
@@ -2076,9 +2076,9 @@ function ManualWalletEntry(props: {
           cannot be recovered. Connect a browser wallet whenever possible.
         </p>
         <p className="text-scarlet-700 dark:text-scarlet-300 mt-2 text-xs font-semibold">
-          The address you submit is your first and final answer for this
-          prize — it cannot be edited after you click Claim Prize. Double-check
-          every character. (Future prizes are claimed separately.)
+          The address you submit is your first and final answer for this prize —
+          it cannot be edited after you click Claim Prize. Double-check every
+          character. (Future prizes are claimed separately.)
         </p>
       </div>
 
@@ -2136,8 +2136,8 @@ function ManualWalletEntry(props: {
           disabled={isSubmitting}
         />
         <span className="text-ink-700 text-sm">
-          I understand that if this is not my wallet, my prize will be lost
-          and cannot be recovered.
+          I understand that if this is not my wallet, my prize will be lost and
+          cannot be recovered.
         </span>
       </label>
 
