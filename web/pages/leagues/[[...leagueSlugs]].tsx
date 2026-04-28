@@ -34,6 +34,7 @@ import { LeagueFeed } from 'web/components/leagues/league-feed'
 import { PrizesModal } from 'web/components/leagues/prizes-modal'
 import { SEO } from 'web/components/SEO'
 import { Avatar } from 'web/components/widgets/avatar'
+import { Carousel } from 'web/components/widgets/carousel'
 import { UserBadge } from 'web/components/widgets/user-link'
 import { UserHovercard } from 'web/components/user/user-hovercard'
 import { Countdown } from 'web/components/widgets/countdown'
@@ -41,6 +42,7 @@ import { InfoTooltip } from 'web/components/widgets/info-tooltip'
 import { LoadingIndicator } from 'web/components/widgets/loading-indicator'
 import { SelectDropdown } from 'web/components/widgets/select-dropdown'
 import { useEffectCheckEquality } from 'web/hooks/use-effect-check-equality'
+import { useIsMobile } from 'web/hooks/use-is-mobile'
 import { useUser } from 'web/hooks/use-user'
 import { useUsers } from 'web/hooks/use-user-supabase'
 import { api } from 'web/lib/api/api'
@@ -89,6 +91,7 @@ interface LeaguesProps {
 export default function Leagues(props: LeaguesProps) {
   const { initialSeasonInfo, currentSeasonInfo } = props
   const user = useUser()
+  const isMobile = useIsMobile()
 
   const [rows, setRows] = usePersistentInMemoryState<league_user_info[]>(
     [],
@@ -308,7 +311,11 @@ export default function Leagues(props: LeaguesProps) {
           <Col className="gap-4">
             {/* Division Tabs */}
             <div className="border-ink-200 border-b">
-              <Row className="scrollbar-hide -mb-px gap-1 overflow-x-auto">
+              <Carousel
+                fadeEdges={!isMobile}
+                showArrowsOnHover={!isMobile}
+                labelsParentClassName="-mb-px gap-1"
+              >
                 {divisions.map((div) => {
                   const isSelected = div === division
                   const isUserDivision = div === userDivision
@@ -333,7 +340,7 @@ export default function Leagues(props: LeaguesProps) {
                     </button>
                   )
                 })}
-              </Row>
+              </Carousel>
             </div>
 
             {/* Cohort Selector */}
