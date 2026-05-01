@@ -1534,8 +1534,7 @@ function AdjustPrizeModal(props: {
   const parsed = Number(adjustPrizeAmount)
   const delta =
     Number.isFinite(parsed) && parsed > 0 ? parsed - currentPrizeAmount : 0
-  const exceedsCap =
-    Math.abs(delta) > MAX_CHARITY_GIVEAWAY_PRIZE_DELTA_USD
+  const exceedsCap = Math.abs(delta) > MAX_CHARITY_GIVEAWAY_PRIZE_DELTA_USD
   const isAmountValid =
     Number.isFinite(parsed) &&
     parsed > 0 &&
@@ -1589,9 +1588,7 @@ function AdjustPrizeModal(props: {
             <p
               className={clsx(
                 'text-xs',
-                exceedsCap
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-ink-500'
+                exceedsCap ? 'text-red-600 dark:text-red-400' : 'text-ink-500'
               )}
             >
               Change: {delta > 0 ? '+' : ''}${delta.toLocaleString()}
