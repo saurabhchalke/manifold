@@ -349,12 +349,9 @@ export default function ShopPage() {
   )
 
   // Fetch charity giveaway data once for both cards
-  const { data: charityData } = useAPIGetter(
-    'get-charity-giveaway',
-    {
-      userId: user?.id,
-    }
-  )
+  const { data: charityData } = useAPIGetter('get-charity-giveaway', {
+    userId: user?.id,
+  })
   const charityGiveawayData = charityData as CharityGiveawayData | undefined
   const isCharityLoading = charityData === undefined
 

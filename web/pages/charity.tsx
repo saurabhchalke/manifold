@@ -718,7 +718,9 @@ function ChampionLegacyCard(props: {
       })
       if (result.success) {
         toast.success(
-          newEnabled ? "Champion's Legacy enabled" : "Champion's Legacy disabled"
+          newEnabled
+            ? "Champion's Legacy enabled"
+            : "Champion's Legacy disabled"
         )
         onChange()
       }
