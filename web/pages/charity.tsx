@@ -38,6 +38,9 @@ import {
   getCurrentGiveawayTicketPrice,
   MAX_CHARITY_GIVEAWAY_PRIZE_DELTA_USD,
 } from 'common/charity-giveaway'
+import { CharityChampionCard } from 'web/components/shop/charity-champion-card'
+import { HovercardBackgroundPreview } from 'web/pages/shop'
+import { FORMER_CHARITY_CHAMPION_ENTITLEMENT_ID } from 'common/shop/items'
 
 function formatEntries(entries: number): string {
   if (entries >= 1000) {
@@ -630,6 +633,30 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
         {/* Confetti */}
         {showConfetti && <FullscreenConfetti />}
 
+        {/* Charity Champion Trophy + Champion's Legacy hovercard residual */}
+        {(() => {
+          const legacyEntitlement = user?.entitlements?.find(
+            (e) => e.entitlementId === FORMER_CHARITY_CHAMPION_ENTITLEMENT_ID
+          )
+          return (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CharityChampionCard
+                data={data}
+                isLoading={!data}
+                user={user}
+                entitlements={user?.entitlements}
+                onEntitlementsChange={() => refresh()}
+              />
+              <ChampionLegacyCard
+                user={user}
+                isOwned={!!legacyEntitlement}
+                isEnabled={legacyEntitlement?.enabled ?? false}
+                onChange={() => refresh()}
+              />
+            </div>
+          )
+        })()}
+
         {/* Sales History */}
         <SalesHistory
           giveawayNum={giveaway.giveawayNum}
@@ -669,6 +696,77 @@ export default function CharityGiveawayPage(props: { giveawayNum?: number }) {
         />
       </Col>
     </Page>
+  )
+}
+
+function ChampionLegacyCard(props: {
+  user: ReturnType<typeof useUser>
+  isOwned: boolean
+  isEnabled: boolean
+  onChange: () => void
+}) {
+  const { user, isOwned, isEnabled, onChange } = props
+  const [toggling, setToggling] = useState(false)
+
+  const handleToggle = async () => {
+    const newEnabled = !isEnabled
+    setToggling(true)
+    try {
+      const result = await api('shop-toggle', {
+        itemId: 'former-charity-champion',
+        enabled: newEnabled,
+      })
+      if (result.success) {
+        toast.success(
+          newEnabled ? "Champion's Legacy enabled" : "Champion's Legacy disabled"
+        )
+        onChange()
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to toggle')
+    } finally {
+      setToggling(false)
+    }
+  }
+
+  return (
+    <Col
+      className={clsx(
+        'bg-canvas-0 border-canvas-50 gap-2 rounded-xl border p-3 shadow-sm',
+        !isOwned && 'opacity-80'
+      )}
+    >
+      <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+        Champion's Legacy
+      </span>
+      <HovercardBackgroundPreview user={user} background="champions-legacy" />
+      <p className="text-ink-500 text-xs">
+        {isOwned
+          ? 'Permanent hovercard background — yours from holding the trophy. Visible in the shop once owned.'
+          : 'Permanent hovercard background — kept for life once you claim the trophy, even after being dethroned.'}
+      </p>
+      <Row className="items-center justify-center gap-2 pt-1">
+        {isOwned ? (
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={isEnabled}
+              onChange={handleToggle}
+              disabled={toggling}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-amber-500 peer-checked:after:translate-x-full dark:bg-gray-600" />
+            <span className="text-ink-700 ml-2 text-sm">
+              {isEnabled ? 'Enabled' : 'Disabled'}
+            </span>
+          </label>
+        ) : (
+          <span className="text-ink-400 text-xs italic">
+            Locked — claim the trophy to unlock
+          </span>
+        )}
+      </Row>
+    </Col>
   )
 }
 
